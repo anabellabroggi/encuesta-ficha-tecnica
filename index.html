@@ -1,0 +1,902 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Encuesta ficha técnica · LotePerfecto</title>
+<meta name="description" content="Ayudanos a diseñar la ficha técnica de lotes de LotePerfecto. Te va a llevar 5 minutos.">
+<meta property="og:title" content="LotePerfecto · Ayudanos a diseñar la ficha técnica">
+<meta property="og:description" content="Calificá cada dato de la ficha de un lote de ejemplo. Te va a llevar 5 minutos.">
+<link rel="icon" href="logo.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{
+  --green:#4E9336; --green-dk:#3B7228; --green-50:#EEF6EA;
+  --gold:#FFD23E; --gold-50:#FFF8DC; --gold-dk:#B8900A;
+  --red:#D64545; --red-50:#FDECEC;
+  --bg:#F6F7F5; --card:#FFFFFF; --border:#E5E7EB;
+  --ink:#1F2937; --muted:#6B7280; --radius:12px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:76px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Barlow",system-ui,sans-serif;font-size:16px;line-height:1.45;-webkit-text-size-adjust:100%}
+h1,h2,h3,.cond{font-family:"Barlow Condensed","Barlow",sans-serif;letter-spacing:.2px}
+h1,h2,h3{margin:0}
+button,input,textarea,select{font:inherit;color:inherit}
+img{max-width:100%}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+
+/* ---------- Barra de progreso ---------- */
+.progress{position:fixed;top:0;left:0;right:0;z-index:1000;background:#fff;border-bottom:1px solid var(--border);box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.progress .wrap{display:flex;align-items:center;gap:12px;height:56px}
+.progress img{height:24px;width:auto}
+.progress-txt{margin-left:auto;font-size:14px;color:var(--muted);white-space:nowrap}
+.progress-txt b{color:var(--ink);font-size:16px}
+.progress-bar{height:5px;background:#EDEFEA}
+.progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--green),#7DBB4E);transition:width .35s ease}
+main{padding-top:72px;padding-bottom:40px}
+
+/* ---------- Tarjetas ---------- */
+.card{min-width:0;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.card-body{padding:16px}
+.card-title{font-size:20px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.card-title svg{width:20px;height:20px;color:var(--green);flex:none}
+
+/* ---------- Portada ---------- */
+.hero{padding:20px;display:grid;gap:18px}
+.hero-logo{height:44px;width:auto}
+.hero h1{font-size:34px;line-height:1.05;font-weight:700}
+.hero p{margin:0;color:var(--muted)}
+.how{display:grid;gap:8px;margin:0;padding:12px 14px;background:var(--gold-50);border-radius:10px;font-size:15px}
+.how li{margin-left:18px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{display:grid;gap:6px}
+.field.full{grid-column:1/-1}
+.field label,.field .lbl{font-weight:600;font-size:15px}
+.req{color:var(--red)}
+.opt{color:var(--muted);font-weight:400;font-size:13px}
+input[type=text],input[type=email],textarea{width:100%;border:1px solid #D1D5DB;border-radius:10px;padding:11px 12px;background:#fff;font-size:16px}
+textarea{resize:vertical;min-height:64px}
+input:focus,textarea:focus{outline:2px solid var(--green);outline-offset:0;border-color:var(--green)}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pill{position:relative}
+.pill input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+.pill span{display:inline-flex;align-items:center;min-height:42px;padding:0 16px;border:1px solid #D1D5DB;border-radius:999px;background:#fff;font-weight:500}
+.pill input:checked+span{background:var(--green);border-color:var(--green);color:#fff}
+.pill input:focus-visible+span{outline:2px solid var(--gold-dk);outline-offset:2px}
+.field.is-error input,.field.is-error .pills .pill span{border-color:var(--red)}
+.field-err{display:none;color:var(--red);font-size:14px}
+.field.is-error .field-err{display:block}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 18px;border-radius:10px;border:1.5px solid transparent;font-weight:600;cursor:pointer;text-decoration:none;white-space:nowrap}
+.btn-primary{background:var(--green);color:#fff}
+.btn-primary:hover{background:var(--green-dk)}
+.btn-outline{background:#fff;border-color:var(--green);color:var(--green)}
+.btn-danger{background:#fff;border-color:var(--red);color:var(--red)}
+.btn-lg{min-height:52px;font-size:18px;padding:0 26px}
+.btn[disabled]{opacity:.6;cursor:wait}
+
+.section-label{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:28px 0 12px}
+.section-label h2{font-size:24px;font-weight:700}
+.section-label .tag{white-space:nowrap;font-size:13px;background:var(--green-50);color:var(--green-dk);padding:3px 10px;border-radius:999px;font-weight:600}
+
+/* ---------- Ficha ---------- */
+.ficha-head .card-body{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.back{width:40px;height:40px;border-radius:10px;border:1px solid var(--border);display:grid;place-items:center;background:#fff}
+.ficha-name{font-size:26px;font-weight:700}
+.ficha-sub{font-size:14px;color:var(--muted)}
+.head-actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.head-actions .btn{min-height:40px;padding:0 14px;font-size:15px}
+.ficha-grid{display:flex;gap:16px;margin-top:16px;align-items:flex-start}
+.col-l{flex:3;min-width:0;display:flex;flex-direction:column;gap:16px}
+.col-r{flex:2;min-width:0;display:flex;flex-direction:column;gap:16px}
+.below{display:flex;flex-direction:column;gap:16px;margin-top:16px}
+
+/* Mapa con pestañas */
+.tabs{display:flex;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:1;min-width:76px;min-height:48px;border:0;background:none;padding:0 10px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:15px}
+.tab[aria-selected=true]{color:var(--green-dk);border-bottom-color:var(--green)}
+.tab .dot{width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 1.5px #E3B21C;visibility:hidden}
+.tab.rated .dot{visibility:visible}
+.tab.pending-tab{color:var(--red)}
+.tabpanel[hidden]{display:none}
+.map{height:340px;background:#dfe5da}
+.map-sm{height:240px}
+.map-note{font-size:13px;color:var(--muted);padding:8px 16px 0}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;padding:10px 16px;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.grad{height:10px;border-radius:5px;background:linear-gradient(90deg,#a50026,#f46d43,#fee08b,#a6d96a,#1a9850);margin:0 16px}
+.grad-lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);padding:3px 16px 0}
+.chart-box{position:relative;height:220px;padding:8px 12px 4px}
+.kpi-row{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px 0}
+.kpi{flex:1;min-width:130px;background:var(--bg);border-radius:10px;padding:8px 12px}
+.kpi small{display:block;color:var(--muted);font-size:12px}
+.kpi b{font-family:"Barlow Condensed",sans-serif;font-size:22px}
+.photos{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:16px}
+.photo{border-radius:10px;overflow:hidden;border:1px solid var(--border);background:#fff}
+.photo-cap{padding:6px 10px;font-size:12px;color:var(--muted)}
+.photo-cap b{color:var(--ink);font-size:13px;display:block}
+
+/* Filas de datos */
+.rows{display:grid;gap:0}
+.row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px solid #F0F1F3;font-size:15px}
+.row:first-child{border-top:0}
+.row span{color:var(--muted)}
+.row b{font-weight:600;text-align:right}
+.price{font-family:"Barlow Condensed",sans-serif;font-size:34px;font-weight:700;color:var(--green-dk);line-height:1}
+.price small{font-size:18px;color:var(--muted);font-weight:500}
+.stack{display:flex;height:26px;border-radius:7px;overflow:hidden;margin:6px 0 4px;font-size:12px;font-weight:600;color:#fff}
+.stack div{display:grid;place-items:center}
+.stack-lbl{display:flex;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.stack-lbl i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px}
+
+/* Tablas */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-weight:600;color:var(--muted);font-size:13px;padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid #F0F1F3;white-space:nowrap}
+td.wrap-ok{white-space:normal;min-width:130px}
+.chip{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600}
+.chip-ok{background:var(--green-50);color:var(--green-dk)}
+.chip-src{background:#EEF2F7;color:#475569}
+.chip-warn{background:#FFF6D1;color:#7A5C00}
+.chip-alt{background:#FDEBD8;color:#9A4A06}
+.chip-bad{background:var(--red-50);color:#A12C2C}
+.desc{margin:0 0 12px;padding-left:18px;display:grid;gap:4px;font-size:15px}
+.apt-lbl{font-size:13px;color:var(--muted);font-weight:600;margin:10px 0 6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip-apt{background:var(--green);color:#fff;font-size:13px;padding:4px 12px}
+.chip-dest{background:var(--green-50);color:var(--green-dk);font-size:13px;padding:4px 10px}
+.photo-real{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover}
+.sw{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:-1px}
+.alert-kpi{display:flex;gap:10px;align-items:flex-start;background:#FFF4E5;border:1px solid #FBD38D;border-radius:10px;padding:10px 12px;margin:12px 16px 0;font-size:15px}
+.alert-kpi b{font-family:"Barlow Condensed",sans-serif;font-size:20px}
+
+/* FAQ */
+.badge-new{white-space:nowrap;font-size:12px;font-weight:700;background:var(--gold);color:#5C4600;padding:2px 8px;border-radius:999px;font-family:"Barlow",sans-serif}
+details{border:1px solid var(--border);border-radius:10px;margin-bottom:8px;background:#fff}
+summary{cursor:pointer;padding:12px 14px;font-weight:600;list-style:none;display:flex;justify-content:space-between;gap:10px;min-height:44px;align-items:center}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font-size:20px;color:var(--green);line-height:1}
+details[open] summary::after{content:"–"}
+details p{margin:0;padding:0 14px 12px;color:var(--muted);font-size:15px}
+
+/* ---------- Franja de calificación ---------- */
+.rate{background:var(--gold-50);border-top:1px dashed #EAD48A;padding:14px 16px 16px;display:grid;gap:10px}
+.param.card>.rate,.param>.rate{margin:0}
+.rate-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+.rate-num{font-size:12px;font-weight:700;color:var(--gold-dk);text-transform:uppercase;letter-spacing:.5px}
+.rate-title{font-family:"Barlow Condensed",sans-serif;font-size:19px;font-weight:600}
+.stars-line{display:flex;align-items:center;flex-wrap:wrap;gap:4px 12px}
+.stars{display:flex;gap:2px}
+.star{width:44px;height:44px;padding:4px;border:0;background:none;cursor:pointer;border-radius:8px;color:#D6D3C4;display:grid;place-items:center;transition:transform .1s}
+.star svg{width:34px;height:34px;fill:currentColor;stroke:#BDB59A;stroke-width:1}
+.star.on{color:var(--gold)}
+.star.on svg{stroke:#D9A900}
+.star.hov{color:#FFE27A}
+.star:active{transform:scale(.92)}
+.star:focus-visible{outline:2px solid var(--green);outline-offset:1px}
+.stars-val{font-size:14px;color:var(--muted);font-weight:500;min-width:96px}
+.stars-val.set{color:var(--ink);font-weight:600}
+.rate label{display:grid;gap:4px;font-size:14px;font-weight:600}
+.rate textarea{min-height:56px;font-weight:400}
+.rate-err{display:none;color:var(--red);font-size:14px;font-weight:600}
+.is-pending .rate{background:var(--red-50);border-top:2px solid var(--red)}
+.is-pending .rate-err{display:block}
+.is-pending.card,.card .is-pending{box-shadow:0 0 0 3px rgba(214,69,69,.25)}
+@keyframes flash{0%,100%{box-shadow:0 0 0 3px rgba(214,69,69,.25)}50%{box-shadow:0 0 0 6px rgba(214,69,69,.45)}}
+.flash{animation:flash .6s ease 2}
+
+.disclaimer{text-align:center;font-size:13px;color:var(--muted);margin:14px 0 0;font-style:italic}
+
+/* ---------- Cierre ---------- */
+.closing .card-body{display:grid;gap:18px}
+.closing .rate{border-radius:10px;border:1px solid #EAD48A}
+.submit-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.submit-msg{color:var(--red);font-weight:600;font-size:15px}
+.notice{background:var(--gold-50);border:1px solid #EAD48A;border-radius:10px;padding:12px 14px;font-size:15px}
+
+/* ---------- Gracias ---------- */
+.thanks{min-height:calc(100vh - 120px);display:grid;place-items:center;text-align:center;padding:24px 0}
+.thanks .card-body{padding:36px 24px;display:grid;gap:14px;justify-items:center;max-width:520px}
+.thanks img{height:52px;width:auto}
+.thanks h2{font-size:34px}
+.thanks p{margin:0;color:var(--muted)}
+
+/* ---------- Leaflet ---------- */
+.leaflet-container{font-family:"Barlow",sans-serif}
+
+/* ---------- Mobile ---------- */
+@media (max-width:860px){
+  .ficha-grid{display:flex;flex-direction:column;align-items:stretch}
+  .col-l,.col-r{display:contents}
+  .o1{order:1}.o2{order:2}.o3{order:3}.o4{order:4}.o5{order:5}.o6{order:6}.o7{order:7}
+  .photos{grid-template-columns:1fr}
+  .map{height:280px}
+}
+@media (max-width:560px){
+  .form-grid{grid-template-columns:1fr}
+  .hero h1{font-size:28px}
+  .head-actions{margin-left:0;width:100%}
+  .head-actions .btn{flex:1;padding:0 8px;font-size:14px}
+  .progress-txt{font-size:13px}
+  .photos{gap:8px;padding:12px}
+  .tab{font-size:14px;min-width:0;padding:0 6px}
+}
+</style>
+</head>
+<body>
+
+<div class="progress" role="status" aria-live="polite">
+  <div class="wrap">
+    <img src="logo.webp" alt="LotePerfecto" width="120" height="24">
+    <div class="progress-txt"><b id="progCount">0</b> de 12 parámetros calificados</div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progFill"></div></div>
+</div>
+
+<main id="main">
+<div class="wrap" id="survey">
+
+  <!-- ============ 0. PORTADA ============ -->
+  <section class="card" id="intro">
+    <div class="hero">
+      <img class="hero-logo" src="logo.webp" alt="LotePerfecto" width="220" height="44">
+      <div>
+        <h1>Ayudanos a diseñar la ficha técnica de lotes</h1>
+        <p style="margin-top:6px">Te va a llevar 5 minutos.</p>
+      </div>
+      <ul class="how">
+        <li>Abajo vas a ver la ficha de un <b>lote de ejemplo</b>, como la de la plataforma.</li>
+        <li>Debajo de cada dato, marcá con <b>estrellas</b> qué tan útil te resulta y, si querés, contanos qué le mejorarías.</li>
+        <li>Tus respuestas se guardan en este dispositivo hasta que las envíes.</li>
+      </ul>
+      <div class="form-grid">
+        <div class="field" data-req="nombre">
+          <label for="f_nombre">Nombre <span class="req">*</span></label>
+          <input type="text" id="f_nombre" data-field="nombre" autocomplete="name">
+          <span class="field-err">Contanos tu nombre.</span>
+        </div>
+        <div class="field">
+          <label for="f_empresa">Empresa o campo <span class="opt">(opcional)</span></label>
+          <input type="text" id="f_empresa" data-field="empresa" autocomplete="organization">
+        </div>
+        <div class="field full" data-req="perfil">
+          <span class="lbl" id="lbl_perfil">Perfil <span class="req">*</span></span>
+          <div class="pills" role="radiogroup" aria-labelledby="lbl_perfil">
+            <label class="pill"><input type="radio" name="perfil" value="Dueño de campo"><span>Dueño de campo</span></label>
+            <label class="pill"><input type="radio" name="perfil" value="Productor"><span>Productor</span></label>
+            <label class="pill"><input type="radio" name="perfil" value="Empresa"><span>Empresa</span></label>
+            <label class="pill"><input type="radio" name="perfil" value="Inmobiliaria"><span>Inmobiliaria</span></label>
+            <label class="pill"><input type="radio" name="perfil" value="Otro"><span>Otro</span></label>
+          </div>
+          <span class="field-err">Elegí tu perfil.</span>
+        </div>
+        <div class="field">
+          <label for="f_zona">Zona <span class="opt">(opcional)</span></label>
+          <input type="text" id="f_zona" data-field="zona" placeholder="Ej.: Sudeste de Buenos Aires">
+        </div>
+        <div class="field">
+          <label for="f_contacto">Email o WhatsApp <span class="opt">(opcional)</span></label>
+          <input type="text" id="f_contacto" data-field="contacto" inputmode="email" autocomplete="email">
+        </div>
+      </div>
+      <div><button type="button" class="btn btn-primary btn-lg" id="btnStart">Ver la ficha y empezar ↓</button></div>
+    </div>
+  </section>
+
+  <!-- ============ 1. FICHA TÉCNICA ============ -->
+  <div class="section-label" id="ficha"><h2>Ficha técnica de ejemplo</h2><span class="tag">12 datos para calificar</span></div>
+
+  <!-- Encabezado y acciones (solo visual, no se califica) -->
+  <section class="card ficha-head">
+    <div class="card-body">
+      <span class="back" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></span>
+      <div>
+        <div class="ficha-name cond">Lote Prueba</div>
+        <div class="ficha-sub">Balcarce, Buenos Aires · 70 ha bajo pivote central</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="ficha-grid">
+    <div class="col-l">
+      <!-- Mapa con pestañas (2-5) -->
+      <div class="card o1" id="mapCard">
+        <div class="tabs" role="tablist" aria-label="Vistas del mapa">
+          <button type="button" class="tab" role="tab" id="tab-satelite" data-tab="satelite" aria-controls="panel-satelite" aria-selected="true"><span>Satélite</span><span class="dot" aria-hidden="true"></span></button>
+          <button type="button" class="tab" role="tab" id="tab-ndvi" data-tab="ndvi" aria-controls="panel-ndvi" aria-selected="false" tabindex="-1"><span>NDVI</span><span class="dot" aria-hidden="true"></span></button>
+          <button type="button" class="tab" role="tab" id="tab-altura" data-tab="altura" aria-controls="panel-altura" aria-selected="false" tabindex="-1"><span>Altura</span><span class="dot" aria-hidden="true"></span></button>
+          <button type="button" class="tab" role="tab" id="tab-fotos" data-tab="fotos" aria-controls="panel-fotos" aria-selected="false" tabindex="-1"><span>Fotos</span><span class="dot" aria-hidden="true"></span></button>
+        </div>
+
+        <section class="param tabpanel" data-id="satelite" id="panel-satelite" role="tabpanel" aria-labelledby="tab-satelite">
+          <div class="map" id="mapSat" aria-label="Mapa satelital del lote"></div>
+          <p class="map-note" style="padding-bottom:10px">Imagen satelital con el contorno del lote cargado en el KMZ (círculo del pivote).</p>
+        </section>
+
+        <section class="param tabpanel" data-id="ndvi" id="panel-ndvi" role="tabpanel" aria-labelledby="tab-ndvi" hidden>
+          <div class="map map-sm" id="mapNdvi" aria-label="Mapa de NDVI simulado"></div>
+          <div style="padding-top:8px"><div class="grad"></div><div class="grad-lbl"><span>0,2 · bajo vigor</span><span>NDVI última imagen</span><span>0,9 · alto vigor</span></div></div>
+        </section>
+
+        <section class="param tabpanel" data-id="altura" id="panel-altura" role="tabpanel" aria-labelledby="tab-altura" hidden>
+          <div class="map map-sm" id="mapAlt" aria-label="Mapa de altimetría del lote"></div>
+          <div class="legend" id="altLegend"></div>
+          <div class="kpi-row" style="padding-top:0"><div class="kpi"><small>Desnivel total</small><b id="altDesnivel"></b></div><div class="kpi"><small>Ambiente con más superficie</small><b id="altMayor"></b></div></div>
+          <div class="tbl-wrap" style="padding:8px 6px 10px">
+            <table>
+              <thead><tr><th>Clase</th><th>Rango (m)</th><th>Sup. (ha)</th><th>%</th><th>Interpretación</th></tr></thead>
+              <tbody id="altBody"></tbody>
+            </table>
+          </div>
+          <p class="map-note" style="padding:0 16px 10px;margin:0">Calculado sobre el contorno del KMZ (55 ha) con modelo de elevación SRTM 30 m, suavizado de 20 m y 7 clases de igual intervalo.</p>
+        </section>
+
+        <section class="param tabpanel" data-id="fotos" id="panel-fotos" role="tabpanel" aria-labelledby="tab-fotos" hidden>
+          <div class="photos" id="photoGrid"></div>
+        </section>
+      </div>
+
+      <!-- 10. Historial -->
+      <section class="param card o7" data-id="historial">
+        <div class="card-body" style="padding-bottom:8px">
+          <h3 class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>Historial agronómico</h3>
+        </div>
+        <div class="tbl-wrap" style="padding:0 6px 10px">
+          <table>
+            <thead><tr><th>Campaña</th><th>Cultivo</th><th>Aplicaciones</th><th>Sup. sembrada</th><th>Anegamiento</th></tr></thead>
+            <tbody>
+              <tr><td>2025/26</td><td>Maíz semilla</td><td>5 (herb., fung., insect.)</td><td>70 ha</td><td><span class="chip chip-warn">Moderado · 17%</span></td></tr>
+              <tr><td>2024/25</td><td>Girasol</td><td>3 (herb., insect.)</td><td>70 ha</td><td><span class="chip chip-ok">Sin anegamiento</span></td></tr>
+              <tr><td>2023/24</td><td>Soja</td><td>4 (herb., fung.)</td><td>70 ha</td><td><span class="chip chip-ok">Bajo · 11%</span></td></tr>
+              <tr><td>2022/23</td><td>Trigo</td><td>3 (herb., fung.)</td><td>70 ha</td><td><span class="chip chip-bad">Severo · 59%</span></td></tr>
+              <tr><td>2021/22</td><td>Soja</td><td>4 (herb., fung.)</td><td>70 ha</td><td><span class="chip chip-alt">Alto · 47%</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>*
+
+    <div class="col-r">
+      <!-- 5. Descripción y aptitud -->
+      <section class="param card o2" data-id="descripcion">
+        <div class="card-body">
+          <h3 class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 4h14v16H5z"/><path d="M8.5 9h7M8.5 12.5h7M8.5 16h4"/></svg>Descripción y aptitud</h3>
+          <ul class="desc">
+            <li>Campo de 200 ha donde se ofrecen <b>70 ha en alquiler</b>, regadas por <b>pivote central</b>.</li>
+            <li>Cuenta con <b>2 bombas electrosumergibles</b>.</li>
+            <li><b>Galpón</b> disponible para guardar insumos.</li>
+          </ul>
+          <div class="apt-lbl">Aptitud</div>
+          <div class="chips"><span class="chip chip-apt">Agrícola</span><span class="chip chip-apt">Ganadera</span></div>
+          <div class="apt-lbl">Destinos posibles</div>
+          <div class="chips">
+            <span class="chip chip-dest">Ganadería bovina</span><span class="chip chip-dest">Trigo</span><span class="chip chip-dest">Soja</span><span class="chip chip-dest">Sorgo</span><span class="chip chip-dest">Papa semilla</span><span class="chip chip-dest">Papa</span><span class="chip chip-dest">Maní</span><span class="chip chip-dest">Maíz semilla</span><span class="chip chip-dest">Maíz</span><span class="chip chip-dest">Girasol semilla</span><span class="chip chip-dest">Girasol</span><span class="chip chip-dest">Cebada</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. Ubicación -->
+      <section class="param card o3" data-id="ubicacion">
+        <div class="card-body">
+          <h3 class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>Ubicación</h3>
+          <div class="rows">
+            <div class="row"><span>Geolocalización</span><b>-37.907826, -58.374570</b></div>
+            <div class="row"><span>Superficie</span><b>70 ha</b></div>
+            <div class="row"><span>Ciudad más cercana</span><b>Balcarce, Buenos Aires</b></div>
+            <div class="row"><span>Distancia a ruta</span><b>20 km (RN 226)</b></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7. Estado actual -->
+      <section class="param card o4" data-id="estado">
+        <div class="card-body">
+          <h3 class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Estado actual</h3>
+          <div class="rows">
+            <div class="row"><span>Liberación del lote</span><b>10/06/2026</b></div>
+            <div class="row"><span>Cultivo actual</span><b>Maíz semilla</b></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 8. Suelo y calidad -->
+      <section class="param card o5" data-id="suelo">
+        <div class="card-body">
+          <h3 class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h18M3 13h18M3 18h18"/><circle cx="7" cy="10.5" r=".6"/><circle cx="15" cy="15.5" r=".6"/></svg>Suelo y calidad</h3>
+          <div class="rows">
+            <div class="row"><span>Textura teórica</span><b>Franco – Franco arcilloso</b></div>
+            <div class="row"><span>Clase de suelo</span><b>I</b></div>
+          </div>
+          <div style="padding:8px 0 4px;border-top:1px solid #F0F1F3;margin-top:2px">
+            <div style="font-size:15px;color:var(--muted)">Arena / Arcilla / Limo <span style="font-size:12px">(SoilGrids 0–30 cm)</span></div>
+            <div class="stack" role="img" aria-label="Arena 32%, arcilla 28%, limo 40%">
+              <div style="width:32%;background:#D9A441">32%</div>
+              <div style="width:28%;background:#A0522D">28%</div>
+              <div style="width:40%;background:#7D8B9C">40%</div>
+            </div>
+            <div class="stack-lbl"><span><i style="background:#D9A441"></i>Arena</span><span><i style="background:#A0522D"></i>Arcilla</span><span><i style="background:#7D8B9C"></i>Limo</span></div>
+          </div>
+          <div class="rows" style="margin-top:6px">
+            <div class="row"><span>Pendiente media</span><b>3,1%</b></div>
+            <div class="row"><span>Materia orgánica (MO)</span><b>1,5%</b></div>
+            <div class="row"><span>pH</span><b>6,2</b></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 9. Pretensión -->
+      <section class="param card o6" data-id="pretension">
+        <div class="card-body">
+          <h3 class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v20M17 6.5c0-1.9-2.2-3-5-3s-5 1.3-5 3.3c0 4.4 10 2.4 10 7 0 2-2.2 3.4-5 3.4s-5-1.2-5-3.2"/></svg>Pretensión</h3>
+          <div class="price">1.000 <small>USD/ha</small></div>
+          <div class="rows" style="margin-top:8px">
+            <div class="row"><span>Duración</span><b>Accidental – 1 año</b></div>
+            <div class="row"><span>Requisitos</span><b>Anticipo del 40% y liberación del lote antes del 07/2027</b></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="below">
+    <!-- 11. Anegamiento -->
+    <section class="param card" data-id="anegamiento">
+      <div class="card-body" style="padding-bottom:0">
+        <h3 class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/></svg>Anegamiento histórico (satelital) <span class="badge-new">Propuesta nueva</span></h3>
+        <span class="chip chip-src">Fuente: Sentinel-1/2, 2019–2026</span>
+        <p class="map-note" style="padding:8px 0 0;margin:0">Todavía no lo calculamos para los lotes. Los valores de este bloque son de ejemplo, para que nos digas si te serviría.</p>
+      </div>
+      <div class="alert-kpi"><span style="font-size:20px">⚠️</span><div>Superficie con riesgo alto <span style="color:var(--muted)">(&gt;15% de frecuencia)</span>: <b>18,7% del lote ≈ 13 ha</b></div></div>
+      <div class="chart-box" style="height:240px;padding-top:14px"><canvas id="chAneg" aria-label="Porcentaje máximo del lote anegado por año"></canvas></div>
+      <div class="legend" style="padding-top:2px"><span><i style="background:#4E9336"></i>&lt;15%</span><span><i style="background:#FFD23E"></i>15–40%</span><span><i style="background:#F28C28"></i>40–60%</span><span><i style="background:#D64545"></i>&gt;60%</span></div>
+      <div class="tbl-wrap" style="padding:0 6px 10px">
+        <table>
+          <thead><tr><th>Año</th><th>Fechas detectadas</th><th>Máx. % anegado</th><th>Máx. ha</th><th>Comportamiento</th></tr></thead>
+          <tbody id="anegBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+
+    <!-- 12. FAQ -->
+    <section class="param card" data-id="faq">
+      <div class="card-body">
+        <h3 class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.2a2.6 2.6 0 0 1 5 .9c0 1.7-2.5 2.2-2.5 3.9M12 17h.01"/></svg>Preguntas frecuentes del lote <span class="badge-new">Propuesta nueva</span></h3>
+        <details><summary>¿Tiene agua para riego?</summary><p>Sí. Las 70 ha se riegan con pivote central, abastecido por 2 bombas electrosumergibles.</p></details>
+        <details><summary>¿Hay tosca?</summary><p>Hay tosca a más de 1,2 m en la mayor parte del lote. En la loma noreste aparece a 80 cm en unas 3 ha.</p></details>
+        <details><summary>¿Estado de los accesos?</summary><p>Se entra por camino rural de tierra, a 20 km de la RN 226. Es transitable con lluvias moderadas y la tranquera es apta para camiones.</p></details>
+        <details><summary>¿Se puede visitar antes de ofertar?</summary><p>Sí, con aviso de 48 h. El encargado acompaña la recorrida y se puede hacer calicata.</p></details>
+      </div>
+    </section>
+  </div>
+
+  <p class="disclaimer">Lote real de Balcarce. Algunos datos son ilustrativos y el diseño final puede cambiar.</p>
+
+  <!-- ============ 2. CIERRE ============ -->
+  <div class="section-label"><h2>Para terminar</h2></div>
+  <section class="card closing" id="cierre">
+    <div class="card-body">
+      <div class="rate" id="generalBlock">
+        <div class="rate-head"><span class="rate-title">Valoración general de la ficha <span class="req">*</span></span></div>
+        <div class="stars-line"><div class="stars" id="generalStars"></div><span class="stars-val" id="generalVal">Sin calificar</span></div>
+        <span class="rate-err">Falta tu valoración general.</span>
+      </div>
+      <div class="field">
+        <label for="f_falta">¿Qué dato te falta para decidir si alquilar/ofertar un lote?</label>
+        <textarea id="f_falta" data-field="falta_dato" rows="3"></textarea>
+      </div>
+      <div class="field">
+        <label for="f_sacaria">¿Qué parámetro sacarías?</label>
+        <textarea id="f_sacaria" data-field="sacaria" rows="2"></textarea>
+      </div>
+      <div class="field">
+        <span class="lbl" id="lbl_entrev">¿Te gustaría que te contactemos para una entrevista de 15 min?</span>
+        <div class="pills" role="radiogroup" aria-labelledby="lbl_entrev">
+          <label class="pill"><input type="radio" name="entrevista" value="Sí"><span>Sí</span></label>
+          <label class="pill"><input type="radio" name="entrevista" value="No"><span>No</span></label>
+        </div>
+      </div>
+      <div class="submit-row">
+        <button type="button" class="btn btn-primary btn-lg" id="btnSend">Enviar respuestas</button>
+        <span class="submit-msg" id="submitMsg" role="alert"></span>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ============ GRACIAS ============ -->
+<div class="wrap" id="thanks" hidden>
+  <div class="thanks">
+    <div class="card"><div class="card-body">
+      <img src="logo.webp" alt="LotePerfecto" width="260" height="52">
+      <h2>¡Gracias<span id="thanksName"></span>!</h2>
+      <p>Tus respuestas nos ayudan a diseñar una ficha técnica que sirva de verdad para decidir.</p>
+      <div class="notice" id="testNotice" hidden><b>Modo prueba:</b> la URL de envío todavía no está configurada, así que las respuestas no se guardaron en la planilla. Se muestran en la consola del navegador.</div>
+    </div></div>
+  </div>
+</div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+/* ===================================================================
+   PEGÁ ACÁ LA URL DEL WEB APP DE APPS SCRIPT (termina en /exec)
+   =================================================================== */
+const ENDPOINT = "https://script.google.com/macros/s/AKfycbzorwlzh2uJoUEmy0jxsmSSrEzrRgXq-tyFTJAHn28TXVIRMpytvI7nDOv4nS7-G89uRA/exec";
+/* =================================================================== */
+
+const PARAMS = [
+  {id:"satelite",    name:"Mapa · Satélite"},
+  {id:"ndvi",        name:"Mapa · NDVI"},
+  {id:"altura",      name:"Mapa · Altura (altimetría)"},
+  {id:"fotos",       name:"Mapa · Fotos"},
+  {id:"descripcion", name:"Descripción y aptitud"},
+  {id:"ubicacion",   name:"Ubicación"},
+  {id:"estado",      name:"Estado actual"},
+  {id:"suelo",       name:"Suelo y calidad"},
+  {id:"pretension",  name:"Pretensión"},
+  {id:"historial",   name:"Historial agronómico"},
+  {id:"anegamiento", name:"Anegamiento histórico"},
+  {id:"faq",         name:"Preguntas frecuentes del lote"}
+];
+const MAP_TABS = ["satelite","ndvi","altura","fotos"];
+const STAR_LABELS = ["Sin calificar","Nada útil","Poco útil","Útil","Muy útil","Imprescindible"];
+const DRAFT_KEY = "lp_encuesta_ficha_v2";
+
+/* ---------- Estado + borrador ---------- */
+function emptyState(){
+  const p = {}; PARAMS.forEach(x => p[x.id] = {s:0, c:""});
+  return {datos:{nombre:"",perfil:"",empresa:"",zona:"",contacto:""}, p, general:0,
+          falta_dato:"", sacaria:"", acepta_entrevista:"", tab:"satelite"};
+}
+let state = emptyState();
+try {
+  const raw = localStorage.getItem(DRAFT_KEY);
+  if (raw) {
+    const d = JSON.parse(raw), base = emptyState();
+    state = Object.assign(base, d, {datos:Object.assign(base.datos, d.datos||{}), p:Object.assign(base.p, d.p||{})});
+  }
+} catch(e) {}
+function saveDraft(){ try { localStorage.setItem(DRAFT_KEY, JSON.stringify(state)); } catch(e) {} }
+
+/* ---------- Componente de estrellas ---------- */
+const STAR_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.9 6 6.5.8-4.8 4.5 1.2 6.5L12 17.3l-5.8 3.1 1.2-6.5L2.6 9.4l6.5-.8z"/></svg>';
+function makeStars(container, labelEl, groupLabel, getVal, setVal){
+  container.setAttribute("role","radiogroup");
+  container.setAttribute("aria-label", groupLabel);
+  const btns = [];
+  for (let v=1; v<=5; v++){
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "star"; b.dataset.v = v;
+    b.setAttribute("role","radio");
+    b.setAttribute("aria-label", v + (v===1?" estrella":" estrellas") + " · " + STAR_LABELS[v]);
+    b.innerHTML = STAR_SVG;
+    b.addEventListener("click", () => { setVal(v); paint(); });
+    b.addEventListener("mouseenter", () => btns.forEach((x,i) => x.classList.toggle("hov", i < v && i >= getVal())));
+    b.addEventListener("keydown", e => {
+      let nv = null;
+      if (e.key==="ArrowRight"||e.key==="ArrowUp") nv = Math.min(5, (getVal()||0)+1);
+      if (e.key==="ArrowLeft"||e.key==="ArrowDown") nv = Math.max(1, (getVal()||1)-1);
+      if (e.key==="Home") nv = 1;
+      if (e.key==="End") nv = 5;
+      if (nv){ e.preventDefault(); setVal(nv); paint(); btns[nv-1].focus(); }
+    });
+    btns.push(b); container.appendChild(b);
+  }
+  container.addEventListener("mouseleave", () => btns.forEach(x => x.classList.remove("hov")));
+  function paint(){
+    const val = getVal();
+    btns.forEach((x,i) => {
+      x.classList.toggle("on", i < val);
+      x.classList.remove("hov");
+      x.setAttribute("aria-checked", String(i+1 === val));
+      x.tabIndex = (val ? i+1 === val : i === 0) ? 0 : -1;
+    });
+    labelEl.textContent = STAR_LABELS[val];
+    labelEl.classList.toggle("set", val > 0);
+  }
+  paint();
+  return paint;
+}
+
+/* ---------- Franjas de calificación ---------- */
+PARAMS.forEach((prm, idx) => {
+  const sec = document.querySelector(`.param[data-id="${prm.id}"]`);
+  const rate = document.createElement("div");
+  rate.className = "rate";
+  rate.innerHTML = `
+    <div class="rate-head"><span class="rate-num">Dato ${idx+1} de 12 · ${prm.name}</span></div>
+    <span class="rate-title">¿Qué tan útil te resulta este dato? <span class="req">*</span></span>
+    <div class="stars-line"><div class="stars"></div><span class="stars-val"></span></div>
+    <span class="rate-err">Falta calificar este dato.</span>
+    <label>¿Qué mejorarías o agregarías a este parámetro?
+      <textarea rows="2" placeholder="Opcional"></textarea></label>`;
+  sec.appendChild(rate);
+  makeStars(rate.querySelector(".stars"), rate.querySelector(".stars-val"),
+    "Utilidad de: " + prm.name,
+    () => state.p[prm.id].s,
+    v => { state.p[prm.id].s = v; sec.classList.remove("is-pending"); onChange(); });
+  const ta = rate.querySelector("textarea");
+  ta.id = "c_" + prm.id;
+  ta.value = state.p[prm.id].c || "";
+  ta.addEventListener("input", () => { state.p[prm.id].c = ta.value; saveDraft(); });
+});
+
+const paintGeneral = makeStars(document.getElementById("generalStars"), document.getElementById("generalVal"),
+  "Valoración general de la ficha", () => state.general,
+  v => { state.general = v; document.getElementById("generalBlock").classList.remove("is-pending"); onChange(); });
+
+/* ---------- Campos de texto y radios ---------- */
+document.querySelectorAll("[data-field]").forEach(el => {
+  const k = el.dataset.field, inDatos = k in state.datos;
+  el.value = inDatos ? state.datos[k] : (state[k] || "");
+  el.addEventListener("input", () => {
+    if (inDatos) state.datos[k] = el.value.trim() ? el.value : ""; else state[k] = el.value;
+    if (k === "nombre" && el.value.trim()) el.closest(".field").classList.remove("is-error");
+    saveDraft();
+  });
+});
+document.querySelectorAll('input[name=perfil]').forEach(r => {
+  r.checked = r.value === state.datos.perfil;
+  r.addEventListener("change", () => { state.datos.perfil = r.value; r.closest(".field").classList.remove("is-error"); saveDraft(); });
+});
+document.querySelectorAll('input[name=entrevista]').forEach(r => {
+  r.checked = r.value === state.acepta_entrevista;
+  r.addEventListener("change", () => { state.acepta_entrevista = r.value; saveDraft(); });
+});
+
+/* ---------- Progreso ---------- */
+function onChange(){ saveDraft(); updateProgress(); }
+function updateProgress(){
+  const n = PARAMS.filter(x => state.p[x.id].s > 0).length;
+  document.getElementById("progCount").textContent = n;
+  document.getElementById("progFill").style.width = (n/12*100) + "%";
+  MAP_TABS.forEach(t => {
+    const tab = document.getElementById("tab-"+t);
+    tab.classList.toggle("rated", state.p[t].s > 0);
+    if (state.p[t].s > 0) tab.classList.remove("pending-tab");
+  });
+}
+
+/* ---------- Pestañas del mapa ---------- */
+const tabs = [...document.querySelectorAll(".tab")];
+function showTab(id, focus){
+  tabs.forEach(t => {
+    const on = t.dataset.tab === id;
+    t.setAttribute("aria-selected", String(on));
+    t.tabIndex = on ? 0 : -1;
+    document.getElementById("panel-"+t.dataset.tab).hidden = !on;
+  });
+  if (focus) document.getElementById("tab-"+id).focus();
+  state.tab = id; saveDraft();
+  initView(id);
+}
+tabs.forEach((t,i) => {
+  t.addEventListener("click", () => showTab(t.dataset.tab));
+  t.addEventListener("keydown", e => {
+    if (e.key==="ArrowRight") { e.preventDefault(); showTab(tabs[(i+1)%tabs.length].dataset.tab, true); }
+    if (e.key==="ArrowLeft")  { e.preventDefault(); showTab(tabs[(i+3)%tabs.length].dataset.tab, true); }
+  });
+});
+
+/* ---------- Mapas (Leaflet) ---------- */
+// Contorno real del lote (KMZ "Partido de Balcarce"), [lat, lng]
+const POLY = [[-37.904092,-58.374570],[-37.904096,-58.374804],[-37.904110,-58.375037],[-37.904132,-58.375270],[-37.904164,-58.375500],[-37.904204,-58.375729],[-37.904254,-58.375954],[-37.904311,-58.376177],[-37.904378,-58.376395],[-37.904453,-58.376609],[-37.904536,-58.376818],[-37.904627,-58.377022],[-37.904726,-58.377220],[-37.904832,-58.377411],[-37.904946,-58.377596],[-37.905066,-58.377773],[-37.905194,-58.377942],[-37.905327,-58.378104],[-37.905467,-58.378257],[-37.905613,-58.378401],[-37.905764,-58.378536],[-37.905920,-58.378661],[-37.906081,-58.378776],[-37.906246,-58.378882],[-37.906415,-58.378976],[-37.906587,-58.379061],[-37.906762,-58.379134],[-37.906940,-58.379197],[-37.907121,-58.379248],[-37.907303,-58.379288],[-37.907486,-58.379317],[-37.907670,-58.379334],[-37.907855,-58.379340],[-37.908039,-58.379334],[-37.908224,-58.379317],[-37.908407,-58.379288],[-37.908589,-58.379248],[-37.908769,-58.379197],[-37.908947,-58.379134],[-37.909123,-58.379061],[-37.909295,-58.378977],[-37.909464,-58.378882],[-37.909629,-58.378777],[-37.909790,-58.378661],[-37.909946,-58.378536],[-37.910097,-58.378401],[-37.910242,-58.378257],[-37.910382,-58.378104],[-37.910516,-58.377943],[-37.910643,-58.377773],[-37.910764,-58.377596],[-37.910878,-58.377411],[-37.910984,-58.377220],[-37.911083,-58.377022],[-37.911174,-58.376818],[-37.911257,-58.376609],[-37.911332,-58.376395],[-37.911398,-58.376177],[-37.911456,-58.375955],[-37.911505,-58.375729],[-37.911546,-58.375500],[-37.911577,-58.375270],[-37.911600,-58.375037],[-37.911614,-58.374804],[-37.911618,-58.374570],[-37.911614,-58.374336],[-37.911600,-58.374102],[-37.911577,-58.373870],[-37.911546,-58.373639],[-37.911505,-58.373411],[-37.911456,-58.373185],[-37.911398,-58.372963],[-37.911332,-58.372744],[-37.911257,-58.372530],[-37.911174,-58.372321],[-37.911083,-58.372118],[-37.910984,-58.371920],[-37.910878,-58.371728],[-37.910764,-58.371544],[-37.910643,-58.371367],[-37.910516,-58.371197],[-37.910382,-58.371036],[-37.910242,-58.370883],[-37.910097,-58.370739],[-37.909946,-58.370604],[-37.909790,-58.370479],[-37.909629,-58.370363],[-37.909464,-58.370258],[-37.909295,-58.370163],[-37.909123,-58.370079],[-37.908947,-58.370005],[-37.908769,-58.369943],[-37.908589,-58.369892],[-37.908407,-58.369852],[-37.908224,-58.369823],[-37.908039,-58.369806],[-37.907855,-58.369800],[-37.907670,-58.369806],[-37.907486,-58.369823],[-37.907303,-58.369852],[-37.907121,-58.369892],[-37.906940,-58.369943],[-37.906762,-58.370006],[-37.906587,-58.370079],[-37.906415,-58.370163],[-37.906246,-58.370258],[-37.906081,-58.370363],[-37.905920,-58.370479],[-37.905764,-58.370604],[-37.905613,-58.370739],[-37.905467,-58.370883],[-37.905327,-58.371036],[-37.905194,-58.371197],[-37.905066,-58.371367],[-37.904946,-58.371544],[-37.904832,-58.371729],[-37.904726,-58.371920],[-37.904627,-58.372118],[-37.904536,-58.372322],[-37.904453,-58.372531],[-37.904378,-58.372745],[-37.904311,-58.372963],[-37.904254,-58.373185],[-37.904204,-58.373411],[-37.904164,-58.373639],[-37.904132,-58.373870],[-37.904110,-58.374102],[-37.904096,-58.374336]];
+const ESRI = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+const maps = {};
+function baseMap(elId){
+  const m = L.map(elId, {scrollWheelZoom:false, dragging:!L.Browser.mobile, tap:false, zoomSnap:0.25});
+  m.fitBounds(L.latLngBounds(POLY), {padding:[18,18]});
+  L.tileLayer(ESRI, {maxZoom:19, attribution:"Imágenes © Esri, Maxar, Earthstar Geographics"}).addTo(m);
+  return m;
+}
+/* Capa raster dibujada en un canvas y recortada con el contorno del lote */
+function canvasOverlay(m, colorFn){
+  const bb = L.latLngBounds(POLY), la0 = bb.getSouth(), la1 = bb.getNorth(), lo0 = bb.getWest(), lo1 = bb.getEast();
+  const N = 64, S = 6, cv = document.createElement("canvas"); cv.width = cv.height = N*S;
+  const ctx = cv.getContext("2d");
+  ctx.beginPath();
+  POLY.forEach(([la,lo],i) => { const x=(lo-lo0)/(lo1-lo0)*N*S, y=(la1-la)/(la1-la0)*N*S; i ? ctx.lineTo(x,y) : ctx.moveTo(x,y); });
+  ctx.closePath(); ctx.clip();
+  for (let r=0; r<N; r++) for (let c=0; c<N; c++){ ctx.fillStyle = colorFn((c+.5)/N, 1-(r+.5)/N); ctx.fillRect(c*S, r*S, S+1, S+1); }
+  L.imageOverlay(cv.toDataURL(), bb, {opacity:.8, interactive:false}).addTo(m);
+}
+function addOutline(m, fit){
+  const p = L.polygon(POLY, {color:"#E11D2E", weight:3, fill:fit, fillOpacity:.06}).addTo(m);
+  m.fitBounds(p.getBounds(), {padding:[18,18]});
+}
+/* Altimetría real: AWS Terrain Tiles (terrarium z15, SRTM ~30 m), focal_mean 20 m + 7 clases de igual intervalo (Altimetry_profile.js).
+   Mapa en img/altimetria.png. Desnivel 13.85 m, contorno 55.22 ha. */
+const ALT = [
+  ["#08306b","139,97–141,95","6,12","11,09%","Bajo extremo",11.09],
+  ["#2171b5","141,95–143,93","13,41","24,29%","Bajo",24.29],
+  ["#6baed6","143,93–145,91","13,48","24,40%","Bajo medio",24.4],
+  ["#74c476","145,91–147,89","10,77","19,50%","Ambiente dominante",19.5],
+  ["#fdae6b","147,89–149,86","7,70","13,94%","Media alta",13.94],
+  ["#e6550d","149,86–151,84","3,43","6,21%","Loma",6.21],
+  ["#a50f15","151,84–153,82","0,32","0,58%","Loma alta",0.58]
+];
+const ALT_BOUNDS = [[-37.9116329, -58.3793306], [-37.904082, -58.3698034]];
+const ALT_DESNIVEL = "13,85 m";
+function ndviColor(u,v){ // NDVI simulado
+  const x = Math.max(0, Math.min(1, 0.68 + 0.18*Math.sin(u*4+1)*Math.cos(v*3) - 0.25*Math.max(0, 0.35-Math.hypot(u-0.25,v-0.3))*3 + 0.06*Math.sin(u*13+v*9)));
+  const stops = [[165,0,38],[244,109,67],[254,224,139],[166,217,106],[26,152,80]];
+  const t = x*(stops.length-1), i = Math.min(stops.length-2, Math.floor(t)), f = t-i;
+  const c = stops[i].map((s,k)=>Math.round(s+(stops[i+1][k]-s)*f));
+  return `rgb(${c[0]},${c[1]},${c[2]})`;
+}
+function initView(id){
+  if (id === "satelite"){
+    if (!maps.sat){ maps.sat = baseMap("mapSat"); addOutline(maps.sat, true); }
+    else maps.sat.invalidateSize();
+  }
+  if (id === "ndvi"){
+    if (!maps.ndvi){ maps.ndvi = baseMap("mapNdvi"); canvasOverlay(maps.ndvi, ndviColor); addOutline(maps.ndvi, false); }
+    else maps.ndvi.invalidateSize();
+    if (!charts.ndvi) charts.ndvi = ndviChart();
+  }
+  if (id === "altura"){
+    if (!maps.alt){ maps.alt = baseMap("mapAlt"); L.imageOverlay("img/altimetria.png", ALT_BOUNDS, {opacity:.8, interactive:false}).addTo(maps.alt); addOutline(maps.alt, false); }
+    else maps.alt.invalidateSize();
+  }
+}
+
+/* Tabla, leyenda y KPIs de altimetría */
+document.getElementById("altBody").innerHTML = ALT.map((r,i) =>
+  `<tr><td><span class="sw" style="background:${r[0]}"></span> ${i}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`).join("");
+document.getElementById("altLegend").innerHTML = ALT.map(r => `<span><i style="background:${r[0]}"></i>${r[4]}</span>`).join("");
+document.getElementById("altDesnivel").textContent = ALT_DESNIVEL;
+const altTop = ALT.reduce((a,b) => b[5] > a[5] ? b : a);
+document.getElementById("altMayor").textContent = `${altTop[4]} · ${Math.round(altTop[5])}%`;
+
+/* Fotos del establecimiento */
+document.getElementById("photoGrid").innerHTML = [
+  ["img/foto-pivote.jpg","Equipo de pivote central","23/03/2022"],
+  ["img/foto-sierra.jpg","Maíz con vista a la sierra","23/03/2022"]
+].map(f => `<figure class="photo" style="margin:0"><a href="${f[0]}" target="_blank" rel="noopener"><img class="photo-real" src="${f[0]}" alt="${f[1]}" loading="lazy" width="1400" height="630"></a><figcaption class="photo-cap"><b>${f[1]}</b>${f[2]} · Foto del establecimiento</figcaption></figure>`).join("");
+
+/* ---------- Gráficos (Chart.js) ---------- */
+const charts = {};
+Chart.defaults.font.family = '"Barlow", system-ui, sans-serif';
+Chart.defaults.color = "#6B7280";
+function ndviChart(){
+  const peaks = [[2021,1,.78],[2022,1,.83],[2022,9,.80],[2024,1,.85],[2025,0,.79],[2026,1,.87]];
+  const labels = [], data = [];
+  const MES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+  for (let y=2021; y<=2026; y++) for (let m=0; m<12; m++){
+    if (y===2026 && m>8) break;
+    const t = y*12+m;
+    let v = 0.24 + 0.03*Math.sin(t*1.7);
+    peaks.forEach(([py,pm,pv]) => { const d = t-(py*12+pm); v = Math.max(v, 0.24 + (pv-0.24)*Math.exp(-d*d/(2*1.7*1.7))); });
+    labels.push(MES[m]+" "+String(y).slice(2)); data.push(+v.toFixed(2));
+  }
+  return new Chart(document.getElementById("chNdvi"), {
+    type:"line",
+    data:{labels, datasets:[{label:"NDVI medio", data, borderColor:"#4E9336", backgroundColor:"rgba(78,147,54,.14)", fill:true, tension:.35, pointRadius:0, pointHoverRadius:4, borderWidth:2}]},
+    options:{responsive:true, maintainAspectRatio:false, animation:false,
+      plugins:{legend:{display:false}, tooltip:{mode:"index", intersect:false}},
+      scales:{y:{min:0, max:1, ticks:{stepSize:.2}, grid:{color:"#EEF0EC"}},
+              x:{grid:{display:false}, ticks:{autoSkip:false, maxRotation:0, callback(v,i){ return labels[i].startsWith("ene") ? "20"+labels[i].slice(4) : ""; }}}}}
+  });
+}
+const ANEG = [
+  [2019,"04/07 – 07/10",88,"61,6","Intensos en invierno/primavera"],
+  [2020,"Jun–Ago, 30/11",40,"28","Recurrencia estacional"],
+  [2021,"20/11 – 25/11",30,"21","Intermedio localizado"],
+  [2022,"Enero",47,"32,9","Eventos puntuales"],
+  [2023,"13/06 – 07/08",59,"41,3","Evento invernal severo"],
+  [2024,"24/01 – 09/11",11,"7,7","Afectación baja"],
+  [2025,"02/02 – 21/08",15,"10,5","Moderados aislados"],
+  [2026,"03/01 – 28/01",17,"11,9","Moderados"]
+];
+const anegColor = p => p < 15 ? "#4E9336" : p <= 40 ? "#FFD23E" : p <= 60 ? "#F28C28" : "#D64545";
+document.getElementById("anegBody").innerHTML = ANEG.map(r =>
+  `<tr><td>${r[0]}</td><td>${r[1]}</td><td><span class="sw" style="background:${anegColor(r[2])}"></span> ${r[2]}%</td><td>${r[3]}</td><td class="wrap-ok">${r[4]}</td></tr>`).join("");
+charts.aneg = new Chart(document.getElementById("chAneg"), {
+  type:"bar",
+  data:{labels:ANEG.map(r=>r[0]), datasets:[{label:"% máx. del lote anegado", data:ANEG.map(r=>r[2]), backgroundColor:ANEG.map(r=>anegColor(r[2])), borderRadius:5, maxBarThickness:42}]},
+  options:{responsive:true, maintainAspectRatio:false, animation:false,
+    plugins:{legend:{display:false}, title:{display:true, text:"% máx. del lote anegado por año", align:"start", font:{size:14, weight:"600"}, color:"#1F2937"},
+             tooltip:{callbacks:{label:c => ` ${c.raw}% del lote (${ANEG[c.dataIndex][3]} ha)`}}},
+    scales:{y:{min:0, max:100, ticks:{callback:v=>v+"%"}, grid:{color:"#EEF0EC"}}, x:{grid:{display:false}}}}
+});
+
+/* ---------- Inicio ---------- */
+paintGeneral();
+updateProgress();
+showTab(MAP_TABS.includes(state.tab) ? state.tab : "satelite");
+
+document.getElementById("btnStart").addEventListener("click", () => {
+  if (checkDatos()) document.getElementById("ficha").scrollIntoView({behavior:"smooth"});
+});
+
+/* ---------- Validación ---------- */
+function flash(el){ el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }
+function checkDatos(){
+  const fN = document.querySelector('[data-req=nombre]'), fP = document.querySelector('[data-req=perfil]');
+  const okN = !!state.datos.nombre.trim(), okP = !!state.datos.perfil;
+  fN.classList.toggle("is-error", !okN); fP.classList.toggle("is-error", !okP);
+  if (!okN){ fN.scrollIntoView({behavior:"smooth", block:"center"}); setTimeout(()=>document.getElementById("f_nombre").focus({preventScroll:true}), 350); return false; }
+  if (!okP){ fP.scrollIntoView({behavior:"smooth", block:"center"}); return false; }
+  return true;
+}
+function validate(){
+  if (!checkDatos()) return "datos";
+  const missing = PARAMS.filter(x => !state.p[x.id].s);
+  document.querySelectorAll(".param").forEach(s => s.classList.toggle("is-pending", !state.p[s.dataset.id].s));
+  MAP_TABS.forEach(t => document.getElementById("tab-"+t).classList.toggle("pending-tab", !state.p[t].s));
+  document.getElementById("generalBlock").classList.toggle("is-pending", !state.general);
+  if (missing.length){
+    const first = missing[0].id;
+    if (MAP_TABS.includes(first)) showTab(first);
+    const sec = document.querySelector(`.param[data-id="${first}"]`);
+    const target = MAP_TABS.includes(first) ? document.getElementById("mapCard") : sec;
+    target.scrollIntoView({behavior:"smooth", block:"start"});
+    flash(target);
+    setTimeout(() => sec.querySelector(".star").focus({preventScroll:true}), 400);
+    return `Faltan ${missing.length} dato${missing.length>1?"s":""} por calificar.`;
+  }
+  if (!state.general){
+    const g = document.getElementById("generalBlock");
+    g.scrollIntoView({behavior:"smooth", block:"center"}); flash(g);
+    return "Falta tu valoración general.";
+  }
+  return null;
+}
+
+/* ---------- Payload y envío ---------- */
+function buildPayload(){
+  const o = {
+    timestamp: new Date().toISOString(),
+    nombre: state.datos.nombre.trim(), perfil: state.datos.perfil,
+    empresa: state.datos.empresa.trim(), zona: state.datos.zona.trim(), contacto: state.datos.contacto.trim()
+  };
+  PARAMS.forEach(x => { o[x.id+"_estrellas"] = state.p[x.id].s; o[x.id+"_comentario"] = (state.p[x.id].c||"").trim(); });
+  o.general_estrellas = state.general;
+  o.falta_dato = state.falta_dato.trim();
+  o.sacaria = state.sacaria.trim();
+  o.acepta_entrevista = state.acepta_entrevista;
+  o.user_agent = navigator.userAgent;
+  return o;
+}
+function showThanks(testMode){
+  document.getElementById("survey").hidden = true;
+  document.getElementById("thanks").hidden = false;
+  document.getElementById("testNotice").hidden = !testMode;
+  const n = state.datos.nombre.trim().split(" ")[0];
+  document.getElementById("thanksName").textContent = n ? ", " + n : "";
+  window.scrollTo(0,0);
+}
+document.getElementById("btnSend").addEventListener("click", async () => {
+  const msg = document.getElementById("submitMsg");
+  const err = validate();
+  if (err){ msg.textContent = err === "datos" ? "Completá tu nombre y perfil al principio." : err; return; }
+  msg.textContent = "";
+  const payload = buildPayload();
+  console.log("Payload de la encuesta:", JSON.stringify(payload, null, 2));
+  if (!ENDPOINT || ENDPOINT.startsWith("PEGAR")){
+    console.warn("ENDPOINT sin configurar: la respuesta NO se envió. Pegá la URL del Web App en la constante ENDPOINT.");
+    showThanks(true);
+    return;
+  }
+  const btn = document.getElementById("btnSend");
+  btn.disabled = true; btn.textContent = "Enviando…";
+  try {
+    await fetch(ENDPOINT, {method:"POST", mode:"no-cors", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:JSON.stringify(payload)});
+    try { localStorage.removeItem(DRAFT_KEY); } catch(e) {}
+    showThanks(false);
+  } catch(e) {
+    console.error(e);
+    msg.textContent = "No pudimos enviar. Revisá tu conexión y probá de nuevo. Tus respuestas siguen guardadas.";
+    btn.disabled = false; btn.textContent = "Enviar respuestas";
+  }
+});
+</script>
+</body>
+</html>
