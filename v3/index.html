@@ -1,0 +1,966 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Encuesta ficha técnica · LotePerfecto</title>
+<meta name="description" content="Ayudanos a mejorar la ficha técnica de lotes en alquiler de LotePerfecto. Te va a llevar 5 minutos.">
+<meta property="og:title" content="LotePerfecto · Ayudanos a mejorar la ficha técnica de lotes en alquiler">
+<meta property="og:description" content="Calificá los datos de la ficha técnica de un lote en alquiler. Te va a llevar 5 minutos.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://anabellabroggi.github.io/encuesta-ficha-tecnica/v3/">
+<meta property="og:image" content="https://anabellabroggi.github.io/encuesta-ficha-tecnica/v3/img/foto-pivote.jpg">
+<meta property="og:image:width" content="1400">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="logo.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{
+  --green:#4E9336; --green-dk:#3B7228; --green-50:#EEF6EA;
+  --gold:#FFD23E; --gold-50:#FFF8DC; --gold-dk:#B8900A;
+  --red:#D64545; --red-50:#FDECEC;
+  --bg:#F6F7F5; --card:#FFFFFF; --border:#E5E7EB;
+  --ink:#1F2937; --muted:#6B7280; --radius:12px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:76px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Barlow",system-ui,sans-serif;font-size:16px;line-height:1.45;-webkit-text-size-adjust:100%}
+h1,h2,h3,.cond{font-family:"Barlow Condensed","Barlow",sans-serif;letter-spacing:.2px}
+h1,h2,h3{margin:0}
+button,input,textarea,select{font:inherit;color:inherit}
+img{max-width:100%}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+
+/* ---------- Barra de progreso ---------- */
+.progress{position:fixed;top:0;left:0;right:0;z-index:1000;background:#fff;border-bottom:1px solid var(--border);box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.progress .wrap{display:flex;align-items:center;gap:12px;height:56px}
+.progress img{height:24px;width:auto}
+.progress-txt{margin-left:auto;font-size:14px;color:var(--muted);white-space:nowrap}
+.progress-txt b{color:var(--ink);font-size:16px}
+.progress-bar{height:5px;background:#EDEFEA}
+.progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--green),#7DBB4E);transition:width .35s ease}
+main{padding-top:72px;padding-bottom:40px}
+
+/* ---------- Tarjetas ---------- */
+.card{min-width:0;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.card-body{padding:16px}
+.card-title{font-family:"Barlow",sans-serif;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#262626;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card-title svg{width:20px;height:20px;color:var(--green);flex:none}
+/* Formato de la ficha de la plataforma: grilla de 2 columnas, etiqueta arriba y valor abajo */
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:16px 10px}
+.kv .full{grid-column:1/-1}
+.kv small{display:block;font-size:11px;font-weight:700;text-transform:uppercase;color:#A3A3A3;letter-spacing:.3px;margin-bottom:3px}
+.kv b{display:block;font-size:14px;font-weight:700;color:#262626}
+.kv .plain{font-weight:500}
+
+/* ---------- Portada ---------- */
+.hero{padding:20px;display:grid;gap:18px}
+.hero-logo{height:44px;width:auto}
+.hero h1{font-size:34px;line-height:1.05;font-weight:700}
+.hero p{margin:0}
+.hero-sub{color:var(--muted)}
+.intro-text{display:grid;gap:10px;font-size:16px;max-width:780px}
+.alert-box{display:flex;gap:10px;align-items:flex-start;background:var(--gold-50);border:1px solid #EAD48A;border-radius:10px;padding:12px 14px;font-weight:600;max-width:780px}
+.alert-box span{font-size:20px;line-height:1.2}
+.steps-title{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.step{position:relative;border:1px solid var(--border);border-radius:10px;padding:12px 12px 12px 54px;background:#fff;min-height:66px}
+.step .n{position:absolute;left:12px;top:12px;width:30px;height:30px;border-radius:50%;background:#EDEFEA;color:var(--muted);display:grid;place-items:center;font-weight:700}
+.step b{display:block}
+.step small{display:block;color:var(--muted);font-size:14px}
+.step.on{border:2px solid var(--green);background:var(--green-50)}
+.step.on .n{background:var(--green);color:#fff}
+.step.on small strong{color:var(--green-dk)}
+.step:not(:last-child)::after{content:"→";position:absolute;right:-15px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-weight:700}
+.how{display:grid;gap:8px;margin:0;padding:12px 14px;background:#F1F3EF;border-radius:10px;font-size:15px;max-width:780px}
+.how li{margin-left:18px}
+
+/* ---------- Campos ---------- */
+.field{display:grid;gap:6px}
+.field label{font-weight:600;font-size:15px}
+.req{color:var(--red)}
+textarea{width:100%;border:1px solid #D1D5DB;border-radius:10px;padding:11px 12px;background:#fff;font-size:16px;resize:vertical;min-height:64px}
+textarea:focus{outline:2px solid var(--green);outline-offset:0;border-color:var(--green)}
+.field-err{display:none;color:var(--red);font-size:14px;font-weight:600}
+.field.is-error textarea{border-color:var(--red)}
+.field.is-error .field-err{display:block}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 18px;border-radius:10px;border:1.5px solid transparent;font-weight:600;cursor:pointer;text-decoration:none;white-space:nowrap}
+.btn-primary{background:var(--green);color:#fff}
+.btn-primary:hover{background:var(--green-dk)}
+.btn-outline{background:#fff;border-color:var(--green);color:var(--green-dk)}
+.btn-lg{min-height:52px;font-size:18px;padding:0 26px}
+.btn[disabled]{opacity:.6;cursor:wait}
+
+.section-label{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:28px 0 12px}
+.section-label h2{font-size:24px;font-weight:700}
+.section-label .tag{white-space:nowrap;font-size:13px;background:var(--green-50);color:var(--green-dk);padding:3px 10px;border-radius:999px;font-weight:600}
+
+/* ---------- Ficha ---------- */
+.ficha-head .card-body{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.head-tag{display:inline-block;margin-top:4px;font-size:11px;font-weight:700;text-transform:uppercase;background:#D4EDDA;color:#155724;border:1px solid #C3E6CB;border-radius:6px;padding:2px 10px}
+.head-actions{margin-left:auto}
+.head-actions .btn{min-height:40px;padding:0 14px;font-size:15px}
+.back{width:40px;height:40px;border-radius:10px;border:1px solid var(--border);display:grid;place-items:center;background:#fff}
+.ficha-name{font-size:26px;font-weight:700}
+.ficha-sub{font-size:14px;color:var(--muted)}
+.ficha-grid{display:flex;gap:16px;margin-top:16px;align-items:flex-start}
+.col-l{flex:3;min-width:0;display:flex;flex-direction:column;gap:16px}
+.col-r{flex:2;min-width:0;display:flex;flex-direction:column;gap:16px}
+.below{display:flex;flex-direction:column;gap:16px;margin-top:16px}
+.infra-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.infra-item{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+.infra-item small{display:block;font-size:11px;font-weight:700;text-transform:uppercase;color:#A3A3A3;letter-spacing:.3px;margin-bottom:4px}
+.infra-item b{font-size:14px;color:#262626}
+.comment-box{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;font-size:15px;color:#404040;margin:0;white-space:pre-line}
+.comment-by{font-size:13px;color:var(--muted);margin:6px 0 0}
+.ndvi-date{position:absolute;top:10px;right:10px;z-index:500;background:#fff;border:1px solid #D1D5DB;border-radius:6px;padding:4px 8px;font-size:13px;font-weight:600;color:#404040;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.map-wrap{position:relative}
+
+/* Mapa con pestañas */
+.map-hint{display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--gold-50);border-bottom:1px solid #EAD48A;font-size:14px;font-weight:600}
+.map-hint .mh-ico{flex:none;font-size:16px}
+.map-hint.done{background:var(--green-50);border-bottom-color:#CFE6C4;color:var(--green-dk)}
+.tabs{display:flex;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:1;min-width:76px;min-height:48px;border:0;background:none;padding:0 10px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:15px}
+.tab[aria-selected=true]{color:var(--green-dk);border-bottom-color:var(--green)}
+.tstate{width:17px;height:17px;border-radius:50%;border:2px solid #C9CDD3;display:inline-grid;place-items:center;font-size:11px;line-height:1;color:#fff;font-weight:700;flex:none}
+.tab.rated .tstate{background:var(--green);border-color:var(--green)}
+.tab.rated .tstate::after{content:"✓"}
+.tab.pending-tab{color:var(--red)}
+.tab.pending-tab .tstate{border-color:var(--red)}
+.tabpanel[hidden]{display:none}
+.map{height:340px;background:#dfe5da}
+.map-sm{height:240px}
+.map-note{font-size:13px;color:var(--muted);padding:8px 16px 0}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;padding:10px 16px;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.grad{height:10px;border-radius:5px;background:linear-gradient(90deg,#a50026,#f46d43,#fee08b,#a6d96a,#1a9850);margin:0 16px}
+.grad-lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);padding:3px 16px 0}
+.kpi-row{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px 0}
+.kpi{flex:1;min-width:130px;background:var(--bg);border-radius:10px;padding:8px 12px}
+.kpi small{display:block;color:var(--muted);font-size:12px}
+.kpi b{font-family:"Barlow Condensed",sans-serif;font-size:22px}
+.photos{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:16px}
+.photo{border-radius:10px;overflow:hidden;border:1px solid var(--border);background:#fff}
+.photo-real{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover}
+.photo-cap{padding:6px 10px;font-size:12px;color:var(--muted)}
+.photo-cap b{color:var(--ink);font-size:13px;display:block}
+.next-row{padding:12px 16px 16px;display:flex;justify-content:flex-end}
+.btn-next{background:#fff;border-color:var(--green);color:var(--green-dk)}
+.btn-next.pulse{animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(78,147,54,.5)}50%{box-shadow:0 0 0 8px rgba(78,147,54,0)}}
+
+/* Tablas y chips */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-weight:600;color:var(--muted);font-size:13px;padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid #F0F1F3;white-space:nowrap}
+.chip{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600}
+.chip-ok{background:var(--green-50);color:var(--green-dk)}
+.chip-warn{background:#FFF6D1;color:#7A5C00}
+.chip-alt{background:#FDEBD8;color:#9A4A06}
+.chip-bad{background:var(--red-50);color:#A12C2C}
+.chip-yes{background:var(--green);color:#fff;margin-right:6px}
+.chip-no{background:#E5E7EB;color:#4B5563;margin-right:6px}
+.sw{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:-1px}
+
+/* ---------- Franja de calificación ---------- */
+.rate{background:var(--gold-50);border-top:1px dashed #EAD48A;padding:14px 16px 16px;display:grid;gap:10px}
+.rate-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+.rate-num{font-size:12px;font-weight:700;color:var(--gold-dk);text-transform:uppercase;letter-spacing:.5px}
+.rate-title{font-family:"Barlow Condensed",sans-serif;font-size:19px;font-weight:600}
+.stars-line{display:flex;align-items:center;flex-wrap:wrap;gap:4px 12px}
+.stars{display:flex;gap:2px}
+.star{width:44px;height:44px;padding:4px;border:0;background:none;cursor:pointer;border-radius:8px;color:#D6D3C4;display:grid;place-items:center;transition:transform .1s}
+.star svg{width:34px;height:34px;fill:currentColor;stroke:#BDB59A;stroke-width:1}
+.star.on{color:var(--gold)}
+.star.on svg{stroke:#D9A900}
+.star.hov{color:#FFE27A}
+.star:active{transform:scale(.92)}
+.star:focus-visible{outline:2px solid var(--green);outline-offset:1px}
+.stars-val{font-size:14px;color:var(--muted);font-weight:500;min-width:96px}
+.stars-val.set{color:var(--ink);font-weight:600}
+.rate label{display:grid;gap:4px;font-size:14px;font-weight:600}
+.rate textarea{min-height:56px;font-weight:400}
+.rate-err{display:none;color:var(--red);font-size:14px;font-weight:600}
+.is-pending .rate{background:var(--red-50);border-top:2px solid var(--red)}
+.is-pending .rate-err{display:block}
+.is-pending.card,.card .is-pending{box-shadow:0 0 0 3px rgba(214,69,69,.25)}
+@keyframes flash{0%,100%{box-shadow:0 0 0 3px rgba(214,69,69,.25)}50%{box-shadow:0 0 0 6px rgba(214,69,69,.45)}}
+.flash{animation:flash .6s ease 2}
+
+.disclaimer{text-align:center;font-size:13px;color:var(--muted);margin:14px 0 0;font-style:italic}
+
+/* ---------- Cierre y ranking ---------- */
+.closing .card-body{display:grid;gap:20px}
+.rank-block{background:var(--gold-50);border:1px solid #EAD48A;border-radius:10px;padding:14px;display:grid;gap:10px}
+.rank-sub{margin:0;color:var(--muted);font-size:15px}
+.rank{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.rk{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:4px 6px 4px 2px;min-height:52px}
+.rk-handle{width:40px;height:44px;display:grid;place-items:center;cursor:grab;color:#9CA3AF;font-size:18px;font-weight:700;letter-spacing:-2px;touch-action:none;user-select:none;-webkit-user-select:none;flex:none}
+.rk-handle:active{cursor:grabbing}
+.rk-n{width:26px;height:26px;border-radius:50%;background:var(--green-50);color:var(--green-dk);font-weight:700;display:grid;place-items:center;font-size:14px;flex:none}
+.rk-name{flex:1;font-weight:600;font-size:15px;min-width:0;line-height:1.2}
+.rk-btn{width:40px;height:40px;border:1px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;flex:none;font-size:13px;color:var(--green-dk)}
+.rk-btn:disabled{opacity:.3;cursor:default}
+.rk-btn:focus-visible{outline:2px solid var(--green);outline-offset:1px}
+.rk.sortable-ghost{opacity:.35}
+.rk.sortable-chosen{box-shadow:0 6px 18px rgba(0,0,0,.14)}
+.sortable-fallback{opacity:.95!important}
+.rank-foot{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.rank-status{font-size:14px;color:var(--green-dk);font-weight:600}
+.rank-err{display:none;color:var(--red);font-size:14px;font-weight:600}
+.rank-block.is-pending{background:var(--red-50);border-color:var(--red);box-shadow:0 0 0 3px rgba(214,69,69,.25)}
+.rank-block.is-pending .rank-err{display:block}
+.submit-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.submit-msg{color:var(--red);font-weight:600;font-size:15px}
+.notice{background:var(--gold-50);border:1px solid #EAD48A;border-radius:10px;padding:12px 14px;font-size:15px}
+
+/* ---------- Toast ---------- */
+.toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,16px);background:#1F2937;color:#fff;padding:10px 18px;border-radius:999px;font-weight:600;font-size:15px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:1100;max-width:calc(100% - 32px);text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- Gracias ---------- */
+.thanks{min-height:calc(100vh - 120px);display:grid;place-items:center;text-align:center;padding:24px 0}
+.thanks .card-body{padding:36px 24px;display:grid;gap:14px;justify-items:center;max-width:520px}
+.thanks img{height:52px;width:auto}
+.thanks h2{font-size:34px}
+.thanks p{margin:0;color:var(--muted)}
+
+.leaflet-container{font-family:"Barlow",sans-serif}
+
+/* ---------- Mobile ---------- */
+@media (max-width:860px){
+  /* En mobile todos los bloques de la ficha quedan en una sola columna y se ordenan con .o1…o8 */
+  .ficha-all{display:flex;flex-direction:column;gap:16px;margin-top:16px}
+  .ficha-grid,.col-l,.col-r,.below{display:contents}
+  .infra-grid{grid-template-columns:1fr 1fr}
+  .o1{order:1}.o2{order:2}.o3{order:3}.o4{order:4}.o5{order:5}.o6{order:6}.o7{order:7}.o8{order:8}
+  .photos{grid-template-columns:1fr}
+  .map{height:280px}
+}
+@media (max-width:700px){
+  .steps{grid-template-columns:1fr;gap:16px}
+  .step:not(:last-child)::after{content:"↓";right:auto;left:22px;top:auto;bottom:-17px;transform:none}
+}
+@media (max-width:560px){
+  .hero h1{font-size:28px}
+  .progress-txt{font-size:13px}
+  .photos{gap:8px;padding:12px}
+  .tab{font-size:14px;min-width:0;padding:0 4px;gap:4px}
+  .next-row .btn{width:100%}
+  .infra-grid{grid-template-columns:1fr}
+  .head-actions{margin-left:0;width:100%}
+  .head-actions .btn{width:100%}
+}
+</style>
+</head>
+<body>
+
+<div class="progress" role="status" aria-live="polite">
+  <div class="wrap">
+    <img src="logo.webp" alt="LotePerfecto" width="120" height="24">
+    <div class="progress-txt"><b id="progCount">0</b> de <span id="progTotal"></span> parámetros calificados</div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progFill"></div></div>
+</div>
+
+<main id="main">
+<div class="wrap" id="survey">
+  <input type="hidden" id="recordID" name="recordID" value="">
+
+  <!-- ============ 0. PORTADA ============ -->
+  <section class="card" id="intro">
+    <div class="hero">
+      <img class="hero-logo" src="logo.webp" alt="LotePerfecto" width="220" height="44">
+      <div>
+        <h1>Ayudanos a mejorar la ficha técnica de lotes en alquiler</h1>
+        <p class="hero-sub" style="margin-top:6px">Te va a llevar 5 minutos.</p>
+      </div>
+      <div class="intro-text">
+        <p>Lo que vas a ver es la <b>ficha técnica de un lote para ALQUILER</b>, tal como aparece en la plataforma LotePerfecto.</p>
+        <p>Queremos entender <b>qué tan relevantes son los parámetros que mostramos hoy</b> para un productor o empresa que busca alquilar. Te pedimos que respondas con total sinceridad: eso es lo que más nos ayuda a mejorar.</p>
+      </div>
+      <div class="alert-box" role="note"><span aria-hidden="true">⚠️</span><p>No tenés que evaluar el lote en sí, sino los parámetros que se muestran en la ficha. El lote es solo un ejemplo.</p></div>
+      <div>
+        <div class="steps-title">Dónde está la ficha dentro del proceso</div>
+        <ol class="steps">
+          <li class="step on"><span class="n">1</span><b>Ficha técnica</b><small>Vista preliminar del lote. <strong>Es la etapa que vas a evaluar.</strong></small></li>
+          <li class="step"><span class="n">2</span><b>Chat directo con el dueño</b><small>Se habilita después de ver la ficha.</small></li>
+          <li class="step"><span class="n">3</span><b>Visita al lote</b><small>Se coordina con el dueño.</small></li>
+        </ol>
+      </div>
+      <ul class="how">
+        <li>Debajo de cada dato, marcá con <b>estrellas</b> qué tan útil te resulta y, si querés, contanos qué le mejorarías.</li>
+        <li>Al final vas a <b>ordenar los datos por importancia</b>.</li>
+      </ul>
+      <div><button type="button" class="btn btn-primary btn-lg" id="btnStart">Ver la ficha y empezar ↓</button></div>
+    </div>
+  </section>
+
+  <!-- ============ 1. FICHA TÉCNICA ============ -->
+  <div class="section-label" id="ficha"><h2>Ficha técnica de ejemplo</h2><span class="tag"><span id="tagTotal"></span> datos para calificar</span></div>
+
+  <!-- Encabezado (solo visual, no se califica) -->
+  <section class="card ficha-head">
+    <div class="card-body">
+      <span class="back" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></span>
+      <div>
+        <div class="ficha-name cond">Lote Prueba</div>
+        <div class="ficha-sub">Balcarce, Buenos Aires · 70 ha bajo pivote central</div>
+        <span class="head-tag">Búsqueda de ejemplo</span>
+      </div>
+      <div class="head-actions"><button type="button" class="btn btn-outline" tabindex="-1">Descargar KMZ</button></div>
+    </div>
+  </section>
+
+  <div class="ficha-all">
+  <div class="ficha-grid">
+    <div class="col-l">
+      <!-- Mapa con 4 vistas, cada una se califica por separado -->
+      <div class="card o1" id="mapCard">
+        <div class="map-hint" id="mapHint" aria-live="polite"></div>
+        <div class="tabs" role="tablist" aria-label="Vistas del mapa">
+          <button type="button" class="tab" role="tab" id="tab-satelite" data-tab="satelite" aria-controls="panel-satelite" aria-selected="true"><span>Satélite</span><span class="tstate" aria-hidden="true"></span></button>
+          <button type="button" class="tab" role="tab" id="tab-ndvi" data-tab="ndvi" aria-controls="panel-ndvi" aria-selected="false" tabindex="-1"><span>NDVI</span><span class="tstate" aria-hidden="true"></span></button>
+          <button type="button" class="tab" role="tab" id="tab-altura" data-tab="altura" aria-controls="panel-altura" aria-selected="false" tabindex="-1"><span>Altura</span><span class="tstate" aria-hidden="true"></span></button>
+          <button type="button" class="tab" role="tab" id="tab-fotos" data-tab="fotos" aria-controls="panel-fotos" aria-selected="false" tabindex="-1"><span>Fotos</span><span class="tstate" aria-hidden="true"></span></button>
+        </div>
+
+        <section class="param tabpanel" data-id="satelite" id="panel-satelite" role="tabpanel" aria-labelledby="tab-satelite">
+          <div class="map" id="mapSat" aria-label="Mapa satelital del lote"></div>
+          <p class="map-note" style="padding-bottom:10px">Imagen satelital con el contorno del lote cargado en el KMZ (círculo del pivote).</p>
+        </section>
+
+        <section class="param tabpanel" data-id="ndvi" id="panel-ndvi" role="tabpanel" aria-labelledby="tab-ndvi" hidden>
+          <div class="map-wrap">
+            <div class="map" id="mapNdvi" aria-label="Mapa de NDVI simulado"></div>
+            <select class="ndvi-date" aria-label="Fecha de la imagen NDVI"><option>12/09/2026</option><option>28/08/2026</option><option>13/08/2026</option></select>
+          </div>
+          <div style="padding:8px 0 12px"><div class="grad"></div><div class="grad-lbl"><span>0,2 · bajo vigor</span><span>NDVI de la fecha elegida</span><span>0,9 · alto vigor</span></div></div>
+        </section>
+
+        <section class="param tabpanel" data-id="altura" id="panel-altura" role="tabpanel" aria-labelledby="tab-altura" hidden>
+          <div class="map map-sm" id="mapAlt" aria-label="Mapa de altimetría del lote"></div>
+          <div class="legend" id="altLegend"></div>
+          <div class="kpi-row" style="padding-top:0"><div class="kpi"><small>Desnivel total</small><b id="altDesnivel"></b></div><div class="kpi"><small>Ambiente con más superficie</small><b id="altMayor"></b></div></div>
+          <div class="tbl-wrap" style="padding:8px 6px 10px">
+            <table>
+              <thead><tr><th>Clase</th><th>Rango (m)</th><th>Sup. (ha)</th><th>%</th><th>Interpretación</th></tr></thead>
+              <tbody id="altBody"></tbody>
+            </table>
+          </div>
+          <p class="map-note" style="padding:0 16px 10px;margin:0">Calculado sobre el contorno del KMZ (55 ha) con modelo de elevación SRTM 30 m, suavizado de 20 m y 7 clases de igual intervalo.</p>
+        </section>
+
+        <section class="param tabpanel" data-id="fotos" id="panel-fotos" role="tabpanel" aria-labelledby="tab-fotos" hidden>
+          <div class="photos" id="photoGrid"></div>
+        </section>
+      </div>
+
+      <!-- Historial agronómico -->
+      <section class="param card o8" data-id="historial">
+        <div class="card-body" style="padding-bottom:8px">
+          <h3 class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>Historial agronómico</h3>
+        </div>
+        <div class="tbl-wrap" style="padding:0 6px 10px">
+          <table>
+            <thead><tr><th>Campaña</th><th>Cultivo</th><th>Aplicaciones</th><th>Sup. sembrada</th><th>Anegamiento</th></tr></thead>
+            <tbody>
+              <tr><td>2025/26</td><td>Maíz semilla</td><td>5 (herb., fung., insect.)</td><td>70 ha</td><td><span class="chip chip-warn">Moderado · 17%</span></td></tr>
+              <tr><td>2024/25</td><td>Girasol</td><td>3 (herb., insect.)</td><td>70 ha</td><td><span class="chip chip-ok">Sin anegamiento</span></td></tr>
+              <tr><td>2023/24</td><td>Soja</td><td>4 (herb., fung.)</td><td>70 ha</td><td><span class="chip chip-ok">Bajo · 11%</span></td></tr>
+              <tr><td>2022/23</td><td>Trigo</td><td>3 (herb., fung.)</td><td>70 ha</td><td><span class="chip chip-bad">Severo · 59%</span></td></tr>
+              <tr><td>2021/22</td><td>Soja</td><td>4 (herb., fung.)</td><td>70 ha</td><td><span class="chip chip-alt">Alto · 47%</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <div class="col-r">
+      <!-- Ubicación -->
+      <section class="param card o2" data-id="ubicacion">
+        <div class="card-body">
+          <h3 class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>Ubicación</h3>
+          <div class="kv">
+            <div><small>Geolocalización</small><b>-37.907826, -58.374570</b></div>
+            <div><small>Superficie</small><b>70 Hectáreas</b></div>
+            <div><small>Ciudad más cercana</small><b>Balcarce, Provincia de Buenos Aires, Argentina</b></div>
+            <div><small>Distancia a ruta</small><b>20km (RN 226)</b></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Estado actual -->
+      <section class="param card o3" data-id="estado">
+        <div class="card-body">
+          <h3 class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>Estado actual</h3>
+          <div class="kv">
+            <div><small>Liberación del lote</small><b>10/06/2026</b></div>
+            <div><small>Cultivo</small><b>Maíz semilla</b></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TODO: confirmar formato exacto con la ficha de la plataforma -->
+      <!-- Suelo y calidad -->
+      <section class="param card o4" data-id="suelo">
+        <div class="card-body">
+          <h3 class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg>Suelo y calidad</h3>
+          <div class="kv">
+            <div><small>Textura teórica</small><b>Franco – Franco arcilloso</b></div>
+            <div><small>Clase de suelo</small><b>I</b></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Pretensión -->
+      <section class="param card o5" data-id="pretension">
+        <div class="card-body">
+          <h3 class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 17c1.5-2 2.5 1 4-1s2 0 3 0"/></svg>Pretensión</h3>
+          <div class="kv">
+            <div><small>Económica</small><b>1.000 USD/ha</b></div>
+            <div><small>Duración</small><b>Accidental – 1 año</b></div>
+            <div class="full"><small>Requisitos</small><b class="plain">Anticipo del 40% y liberación del lote antes del 07/2027</b></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Bloques de ancho completo, como en la plataforma -->
+  <div class="below">
+    <!-- TODO: confirmar campos exactos con la ficha de la plataforma -->
+    <!-- Infraestructura y servicios (ítems generados desde la constante INFRA del script) -->
+    <section class="param card o6" data-id="infraestructura">
+      <div class="card-body">
+        <h3 class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16M16 9h2a2 2 0 0 1 2 2v10M3 21h18M8 7h4M8 11h4M8 15h4"/></svg>Infraestructura y servicios</h3>
+        <div class="infra-grid" id="infraGrid"></div>
+      </div>
+    </section>
+
+    <!-- Comentarios del oferente -->
+    <section class="param card o7" data-id="comentarios">
+      <div class="card-body">
+        <h3 class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12z"/><path d="M8 10h8M8 14h5"/></svg>Comentarios del oferente</h3>
+        <p class="comment-box">Campo de 200 ha; se alquilan 70 ha regadas por pivote central con 2 bombas electrosumergibles. Hay galpón disponible para guardar insumos. Se puede visitar con aviso de 48 h.</p>
+        <p class="comment-by">Escrito por el dueño del lote</p>
+      </div>
+    </section>
+  </div>
+  </div>
+
+  <p class="disclaimer">Lote de ejemplo en Balcarce. Algunos datos son ilustrativos y el diseño final puede cambiar.</p>
+
+  <!-- ============ 2. CIERRE ============ -->
+  <div class="section-label"><h2>Para terminar</h2></div>
+  <section class="card closing" id="cierre">
+    <div class="card-body">
+      <div class="rank-block" id="rankBlock">
+        <span class="rate-title">Ordená los datos de más a menos importante <span class="req">*</span></span>
+        <p class="rank-sub">Arrastrá para ordenar. Arriba, el más importante para decidir alquilar.</p>
+        <ol class="rank" id="rankList" aria-label="Ranking de datos por importancia"></ol>
+        <div class="rank-foot">
+          <button type="button" class="btn btn-outline" id="btnRankOk">Confirmo este orden</button>
+          <span class="rank-status" id="rankStatus" aria-live="polite"></span>
+        </div>
+        <span class="rank-err">Ordená la lista o tocá "Confirmo este orden".</span>
+      </div>
+      <div class="field" data-req="falta_dato">
+        <label for="f_falta">¿Qué dato te falta para decidir si alquilar un lote? <span class="req">*</span></label>
+        <textarea id="f_falta" data-field="falta_dato" rows="3"></textarea>
+        <span class="field-err">Contanos qué dato te falta (mínimo 3 caracteres).</span>
+      </div>
+      <div class="field" data-req="sacaria">
+        <label for="f_sacaria">¿Qué parámetro sacarías y por qué? <span class="req">*</span></label>
+        <textarea id="f_sacaria" data-field="sacaria" rows="3" placeholder="Si no sacarías ninguno, contanos por qué"></textarea>
+        <span class="field-err">Contanos qué sacarías y por qué (mínimo 3 caracteres).</span>
+      </div>
+      <div class="submit-row">
+        <button type="button" class="btn btn-primary btn-lg" id="btnSend">Enviar respuestas</button>
+        <span class="submit-msg" id="submitMsg" role="alert"></span>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ============ GRACIAS ============ -->
+<div class="wrap" id="thanks" hidden>
+  <div class="thanks">
+    <div class="card"><div class="card-body">
+      <img src="logo.webp" alt="LotePerfecto" width="260" height="52">
+      <h2>¡Gracias!</h2>
+      <p>Tus respuestas nos ayudan a mejorar la ficha técnica para que sirva de verdad a la hora de decidir.</p>
+      <div class="notice" id="testNotice" hidden><b>Modo prueba:</b> la URL de envío todavía no está configurada, así que las respuestas no se guardaron en la planilla. Se muestran en la consola del navegador.</div>
+    </div></div>
+  </div>
+</div>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+<script>
+/* ===================================================================
+   PEGÁ ACÁ LA URL DEL WEB APP DE APPS SCRIPT (termina en /exec)
+   =================================================================== */
+const ENDPOINT = "https://script.google.com/macros/s/AKfycbzorwlzh2uJoUEmy0jxsmSSrEzrRgXq-tyFTJAHn28TXVIRMpytvI7nDOv4nS7-G89uRA/exec";
+/* =================================================================== */
+
+/* Parámetros calificables. `view` = vista del mapa (pestaña). */
+const PARAMS = [
+  {id:"satelite",        name:"Mapa · Satélite", view:"Satélite"},
+  {id:"ndvi",            name:"Mapa · NDVI",     view:"NDVI"},
+  {id:"altura",          name:"Mapa · Altura (altimetría)", view:"Altura"},
+  {id:"fotos",           name:"Mapa · Fotos",    view:"Fotos"},
+  {id:"ubicacion",       name:"Ubicación"},
+  {id:"estado",          name:"Estado actual"},
+  {id:"suelo",           name:"Suelo y calidad"},
+  {id:"pretension",      name:"Pretensión"},
+  {id:"infraestructura", name:"Infraestructura y servicios"},
+  {id:"comentarios",     name:"Comentarios del oferente"},
+  {id:"historial",       name:"Historial agronómico"}
+];
+const MAP_TABS = PARAMS.filter(p => p.view).map(p => p.id);
+const PARAM_IDS = PARAMS.map(p => p.id);
+const NAME = Object.fromEntries(PARAMS.map(p => [p.id, p.name]));
+const STAR_LABELS = ["Sin calificar","Nada útil","Poco útil","Útil","Muy útil","Imprescindible"];
+const DRAFT_KEY = "lp_encuesta_ficha_v3";
+
+/* TODO: reemplazar con los campos reales de la ficha. ok: true = Sí, false = No, null = sin chip */
+const INFRA = [
+  {label:"Riego",                        ok:true,  det:"Pivote central (70 ha)"},
+  {label:"Bombas",                       ok:null,  det:"2 electrosumergibles"},
+  {label:"Energía eléctrica",            ok:true,  det:"Trifásica"},
+  {label:"Galpón / depósito de insumos", ok:true,  det:""},
+  {label:"Vivienda para personal",       ok:false, det:""},
+  {label:"Acceso",                       ok:null,  det:"Camino rural de tierra, a 20 km de RN 226"}
+];
+
+/* ---------- recordID desde la URL (?recordID=12345) ---------- */
+function urlRecordID(){
+  try {
+    for (const [k, v] of new URLSearchParams(location.search)) {
+      if (k.toLowerCase() === "recordid" && v.trim()) return v.trim();
+    }
+  } catch(e) {}
+  return "";
+}
+const URL_RID = urlRecordID();
+
+/* ---------- Estado + borrador ---------- */
+function shuffle(arr){
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+function emptyState(){
+  const p = {}; PARAMS.forEach(x => p[x.id] = {s:0, c:""});
+  return {recordID:"", p, rank:shuffle(PARAM_IDS), rankDone:false, falta_dato:"", sacaria:"", tab:"satelite"};
+}
+let state = emptyState();
+try {
+  const raw = localStorage.getItem(DRAFT_KEY);
+  if (raw) {
+    const d = JSON.parse(raw);
+    // Si la URL trae un recordID distinto al del borrador, es otra persona: se descarta el borrador.
+    if (!(URL_RID && (d.recordID || "") !== URL_RID)) {
+      const base = emptyState();
+      state = Object.assign(base, d, {p:Object.assign(base.p, d.p || {})});
+    }
+  }
+} catch(e) {}
+if (URL_RID) state.recordID = URL_RID;
+if (!Array.isArray(state.rank) || state.rank.length !== PARAM_IDS.length || !PARAM_IDS.every(id => state.rank.includes(id))) {
+  state.rank = shuffle(PARAM_IDS); state.rankDone = false;
+}
+document.getElementById("recordID").value = state.recordID || "";
+function saveDraft(){ try { localStorage.setItem(DRAFT_KEY, JSON.stringify(state)); } catch(e) {} }
+saveDraft();
+
+/* ---------- Toast ---------- */
+let toastTimer = null;
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 3000);
+}
+
+/* ---------- Componente de estrellas ---------- */
+const STAR_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.9 6 6.5.8-4.8 4.5 1.2 6.5L12 17.3l-5.8 3.1 1.2-6.5L2.6 9.4l6.5-.8z"/></svg>';
+function makeStars(container, labelEl, groupLabel, getVal, setVal){
+  container.setAttribute("role","radiogroup");
+  container.setAttribute("aria-label", groupLabel);
+  const btns = [];
+  for (let v=1; v<=5; v++){
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "star"; b.dataset.v = v;
+    b.setAttribute("role","radio");
+    b.setAttribute("aria-label", v + (v===1?" estrella":" estrellas") + " · " + STAR_LABELS[v]);
+    b.innerHTML = STAR_SVG;
+    b.addEventListener("click", () => { setVal(v); paint(); });
+    b.addEventListener("mouseenter", () => btns.forEach((x,i) => x.classList.toggle("hov", i < v && i >= getVal())));
+    b.addEventListener("keydown", e => {
+      let nv = null;
+      if (e.key==="ArrowRight"||e.key==="ArrowUp") nv = Math.min(5, (getVal()||0)+1);
+      if (e.key==="ArrowLeft"||e.key==="ArrowDown") nv = Math.max(1, (getVal()||1)-1);
+      if (e.key==="Home") nv = 1;
+      if (e.key==="End") nv = 5;
+      if (nv){ e.preventDefault(); setVal(nv); paint(); btns[nv-1].focus(); }
+    });
+    btns.push(b); container.appendChild(b);
+  }
+  container.addEventListener("mouseleave", () => btns.forEach(x => x.classList.remove("hov")));
+  function paint(){
+    const val = getVal();
+    btns.forEach((x,i) => {
+      x.classList.toggle("on", i < val);
+      x.classList.remove("hov");
+      x.setAttribute("aria-checked", String(i+1 === val));
+      x.tabIndex = (val ? i+1 === val : i === 0) ? 0 : -1;
+    });
+    labelEl.textContent = STAR_LABELS[val];
+    labelEl.classList.toggle("set", val > 0);
+  }
+  paint();
+  return paint;
+}
+
+/* ---------- Franjas de calificación ---------- */
+const N = PARAMS.length;
+PARAMS.forEach((prm, idx) => {
+  const sec = document.querySelector(`.param[data-id="${prm.id}"]`);
+  const title = prm.view ? `¿Qué tan útil te resulta la vista <b>${prm.view}</b>?` : "¿Qué tan útil te resulta este dato?";
+  const rate = document.createElement("div");
+  rate.className = "rate";
+  rate.innerHTML = `
+    <div class="rate-head"><span class="rate-num">Dato ${idx+1} de ${N} · ${prm.name}</span></div>
+    <span class="rate-title">${title} <span class="req">*</span></span>
+    <div class="stars-line"><div class="stars"></div><span class="stars-val"></span></div>
+    <span class="rate-err">Falta calificar este dato.</span>
+    <label>¿Qué mejorarías o agregarías a este parámetro?
+      <textarea rows="2" placeholder="Opcional"></textarea></label>`;
+  sec.appendChild(rate);
+
+  // Botón "Siguiente vista" debajo de la franja (vistas del mapa, menos la última)
+  const vi = MAP_TABS.indexOf(prm.id);
+  if (vi > -1 && vi < MAP_TABS.length - 1){
+    const next = MAP_TABS[vi + 1];
+    const row = document.createElement("div");
+    row.className = "next-row";
+    row.innerHTML = `<button type="button" class="btn btn-next" data-next="${next}">Siguiente vista: ${PARAMS.find(p => p.id === next).view} →</button>`;
+    sec.appendChild(row);
+    row.querySelector("button").addEventListener("click", e => {
+      e.currentTarget.classList.remove("pulse");
+      showTab(next);
+      document.getElementById("mapCard").scrollIntoView({behavior:"smooth", block:"start"});
+    });
+  }
+
+  makeStars(rate.querySelector(".stars"), rate.querySelector(".stars-val"),
+    "Utilidad de: " + prm.name,
+    () => state.p[prm.id].s,
+    v => {
+      const was = state.p[prm.id].s;
+      state.p[prm.id].s = v; sec.classList.remove("is-pending"); onChange();
+      if (!was && prm.view) onViewRated(prm.id);
+    });
+  const ta = rate.querySelector("textarea");
+  ta.id = "c_" + prm.id;
+  ta.value = state.p[prm.id].c || "";
+  ta.addEventListener("input", () => { state.p[prm.id].c = ta.value; saveDraft(); });
+});
+
+function onViewRated(id){
+  const i = MAP_TABS.indexOf(id), next = MAP_TABS[i + 1];
+  if (next && !state.p[next].s){
+    const b = document.querySelector(`.param[data-id="${id}"] .btn-next`);
+    if (b) b.classList.add("pulse");
+  }
+  const left = MAP_TABS.filter(t => !state.p[t].s).length;
+  if (left > 0) toast(`¡Bien! Te faltan ${left} ${left === 1 ? "vista" : "vistas"} del mapa`);
+}
+
+/* ---------- Infraestructura ---------- */
+document.getElementById("infraGrid").innerHTML = INFRA.map(r => {
+  const chip = r.ok === true ? '<span class="chip chip-yes">Sí</span>' : r.ok === false ? '<span class="chip chip-no">No</span>' : "";
+  return `<div class="infra-item"><small>${r.label}</small><b>${chip}${r.det}</b></div>`;
+}).join("");
+
+/* ---------- Preguntas abiertas obligatorias ---------- */
+document.querySelectorAll("[data-field]").forEach(el => {
+  const k = el.dataset.field;
+  el.value = state[k] || "";
+  el.addEventListener("input", () => {
+    state[k] = el.value;
+    if (el.value.trim().length >= 3) el.closest(".field").classList.remove("is-error");
+    saveDraft();
+  });
+});
+
+/* ---------- Progreso ---------- */
+document.getElementById("progTotal").textContent = N;
+document.getElementById("tagTotal").textContent = N;
+function onChange(){ saveDraft(); updateProgress(); }
+function updateProgress(){
+  const n = PARAMS.filter(x => state.p[x.id].s > 0).length;
+  document.getElementById("progCount").textContent = n;
+  document.getElementById("progFill").style.width = (n / N * 100) + "%";
+  MAP_TABS.forEach(t => {
+    const tab = document.getElementById("tab-" + t), ok = state.p[t].s > 0;
+    tab.classList.toggle("rated", ok);
+    tab.title = ok ? "Vista calificada" : "Falta calificar esta vista";
+    if (ok) tab.classList.remove("pending-tab");
+  });
+  const v = MAP_TABS.filter(t => state.p[t].s > 0).length, total = MAP_TABS.length;
+  const hint = document.getElementById("mapHint");
+  hint.classList.toggle("done", v === total);
+  hint.innerHTML = v === total
+    ? `<span class="mh-ico" aria-hidden="true">✓</span><span>Este mapa tiene ${total} vistas. Calificaste las ${total}.</span>`
+    : `<span class="mh-ico" aria-hidden="true">🗺️</span><span>Este mapa tiene ${total} vistas. Calificá cada una por separado (<b>${v} de ${total}</b> calificadas)</span>`;
+}
+
+/* ---------- Pestañas del mapa ---------- */
+const tabs = [...document.querySelectorAll(".tab")];
+function showTab(id, focus){
+  tabs.forEach(t => {
+    const on = t.dataset.tab === id;
+    t.setAttribute("aria-selected", String(on));
+    t.tabIndex = on ? 0 : -1;
+    document.getElementById("panel-" + t.dataset.tab).hidden = !on;
+  });
+  if (focus) document.getElementById("tab-" + id).focus();
+  state.tab = id; saveDraft();
+  initView(id);
+}
+tabs.forEach((t,i) => {
+  t.addEventListener("click", () => showTab(t.dataset.tab));
+  t.addEventListener("keydown", e => {
+    if (e.key==="ArrowRight") { e.preventDefault(); showTab(tabs[(i+1)%tabs.length].dataset.tab, true); }
+    if (e.key==="ArrowLeft")  { e.preventDefault(); showTab(tabs[(i+tabs.length-1)%tabs.length].dataset.tab, true); }
+  });
+});
+
+/* ---------- Mapas (Leaflet) ---------- */
+// Contorno real del lote (KMZ "Partido de Balcarce"), [lat, lng]
+const POLY = [[-37.904092,-58.374570],[-37.904096,-58.374804],[-37.904110,-58.375037],[-37.904132,-58.375270],[-37.904164,-58.375500],[-37.904204,-58.375729],[-37.904254,-58.375954],[-37.904311,-58.376177],[-37.904378,-58.376395],[-37.904453,-58.376609],[-37.904536,-58.376818],[-37.904627,-58.377022],[-37.904726,-58.377220],[-37.904832,-58.377411],[-37.904946,-58.377596],[-37.905066,-58.377773],[-37.905194,-58.377942],[-37.905327,-58.378104],[-37.905467,-58.378257],[-37.905613,-58.378401],[-37.905764,-58.378536],[-37.905920,-58.378661],[-37.906081,-58.378776],[-37.906246,-58.378882],[-37.906415,-58.378976],[-37.906587,-58.379061],[-37.906762,-58.379134],[-37.906940,-58.379197],[-37.907121,-58.379248],[-37.907303,-58.379288],[-37.907486,-58.379317],[-37.907670,-58.379334],[-37.907855,-58.379340],[-37.908039,-58.379334],[-37.908224,-58.379317],[-37.908407,-58.379288],[-37.908589,-58.379248],[-37.908769,-58.379197],[-37.908947,-58.379134],[-37.909123,-58.379061],[-37.909295,-58.378977],[-37.909464,-58.378882],[-37.909629,-58.378777],[-37.909790,-58.378661],[-37.909946,-58.378536],[-37.910097,-58.378401],[-37.910242,-58.378257],[-37.910382,-58.378104],[-37.910516,-58.377943],[-37.910643,-58.377773],[-37.910764,-58.377596],[-37.910878,-58.377411],[-37.910984,-58.377220],[-37.911083,-58.377022],[-37.911174,-58.376818],[-37.911257,-58.376609],[-37.911332,-58.376395],[-37.911398,-58.376177],[-37.911456,-58.375955],[-37.911505,-58.375729],[-37.911546,-58.375500],[-37.911577,-58.375270],[-37.911600,-58.375037],[-37.911614,-58.374804],[-37.911618,-58.374570],[-37.911614,-58.374336],[-37.911600,-58.374102],[-37.911577,-58.373870],[-37.911546,-58.373639],[-37.911505,-58.373411],[-37.911456,-58.373185],[-37.911398,-58.372963],[-37.911332,-58.372744],[-37.911257,-58.372530],[-37.911174,-58.372321],[-37.911083,-58.372118],[-37.910984,-58.371920],[-37.910878,-58.371728],[-37.910764,-58.371544],[-37.910643,-58.371367],[-37.910516,-58.371197],[-37.910382,-58.371036],[-37.910242,-58.370883],[-37.910097,-58.370739],[-37.909946,-58.370604],[-37.909790,-58.370479],[-37.909629,-58.370363],[-37.909464,-58.370258],[-37.909295,-58.370163],[-37.909123,-58.370079],[-37.908947,-58.370005],[-37.908769,-58.369943],[-37.908589,-58.369892],[-37.908407,-58.369852],[-37.908224,-58.369823],[-37.908039,-58.369806],[-37.907855,-58.369800],[-37.907670,-58.369806],[-37.907486,-58.369823],[-37.907303,-58.369852],[-37.907121,-58.369892],[-37.906940,-58.369943],[-37.906762,-58.370006],[-37.906587,-58.370079],[-37.906415,-58.370163],[-37.906246,-58.370258],[-37.906081,-58.370363],[-37.905920,-58.370479],[-37.905764,-58.370604],[-37.905613,-58.370739],[-37.905467,-58.370883],[-37.905327,-58.371036],[-37.905194,-58.371197],[-37.905066,-58.371367],[-37.904946,-58.371544],[-37.904832,-58.371729],[-37.904726,-58.371920],[-37.904627,-58.372118],[-37.904536,-58.372322],[-37.904453,-58.372531],[-37.904378,-58.372745],[-37.904311,-58.372963],[-37.904254,-58.373185],[-37.904204,-58.373411],[-37.904164,-58.373639],[-37.904132,-58.373870],[-37.904110,-58.374102],[-37.904096,-58.374336]];
+const ESRI = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+const maps = {};
+function baseMap(elId){
+  const m = L.map(elId, {scrollWheelZoom:false, dragging:!L.Browser.mobile, tap:false, zoomSnap:0.25});
+  m.fitBounds(L.latLngBounds(POLY), {padding:[18,18]});
+  L.tileLayer(ESRI, {maxZoom:19, attribution:"Imágenes © Esri, Maxar, Earthstar Geographics"}).addTo(m);
+  return m;
+}
+/* Capa raster dibujada en un canvas y recortada con el contorno del lote */
+function canvasOverlay(m, colorFn){
+  const bb = L.latLngBounds(POLY), la0 = bb.getSouth(), la1 = bb.getNorth(), lo0 = bb.getWest(), lo1 = bb.getEast();
+  const G = 64, S = 6, cv = document.createElement("canvas"); cv.width = cv.height = G*S;
+  const ctx = cv.getContext("2d");
+  ctx.beginPath();
+  POLY.forEach(([la,lo],i) => { const x=(lo-lo0)/(lo1-lo0)*G*S, y=(la1-la)/(la1-la0)*G*S; i ? ctx.lineTo(x,y) : ctx.moveTo(x,y); });
+  ctx.closePath(); ctx.clip();
+  for (let r=0; r<G; r++) for (let c=0; c<G; c++){ ctx.fillStyle = colorFn((c+.5)/G, 1-(r+.5)/G); ctx.fillRect(c*S, r*S, S+1, S+1); }
+  L.imageOverlay(cv.toDataURL(), bb, {opacity:.8, interactive:false}).addTo(m);
+}
+function addOutline(m, fit){
+  const p = L.polygon(POLY, {color:"#E11D2E", weight:3, fill:fit, fillOpacity:.06}).addTo(m);
+  m.fitBounds(p.getBounds(), {padding:[18,18]});
+}
+/* Altimetría real: AWS Terrain Tiles (terrarium z15, SRTM ~30 m), focal_mean 20 m + 7 clases de igual intervalo (Altimetry_profile.js).
+   Mapa en img/altimetria.png. Desnivel 13.85 m, contorno 55.22 ha. */
+const ALT = [
+  ["#08306b","139,97–141,95","6,12","11,09%","Bajo extremo",11.09],
+  ["#2171b5","141,95–143,93","13,41","24,29%","Bajo",24.29],
+  ["#6baed6","143,93–145,91","13,48","24,40%","Bajo medio",24.4],
+  ["#74c476","145,91–147,89","10,77","19,50%","Ambiente dominante",19.5],
+  ["#fdae6b","147,89–149,86","7,70","13,94%","Media alta",13.94],
+  ["#e6550d","149,86–151,84","3,43","6,21%","Loma",6.21],
+  ["#a50f15","151,84–153,82","0,32","0,58%","Loma alta",0.58]
+];
+const ALT_BOUNDS = [[-37.9116329, -58.3793306], [-37.904082, -58.3698034]];
+const ALT_DESNIVEL = "13,85 m";
+function ndviColor(u,v){ // NDVI simulado
+  const x = Math.max(0, Math.min(1, 0.68 + 0.18*Math.sin(u*4+1)*Math.cos(v*3) - 0.25*Math.max(0, 0.35-Math.hypot(u-0.25,v-0.3))*3 + 0.06*Math.sin(u*13+v*9)));
+  const stops = [[165,0,38],[244,109,67],[254,224,139],[166,217,106],[26,152,80]];
+  const t = x*(stops.length-1), i = Math.min(stops.length-2, Math.floor(t)), f = t-i;
+  const c = stops[i].map((s,k)=>Math.round(s+(stops[i+1][k]-s)*f));
+  return `rgb(${c[0]},${c[1]},${c[2]})`;
+}
+function initView(id){
+  if (id === "satelite"){
+    if (!maps.sat){ maps.sat = baseMap("mapSat"); addOutline(maps.sat, true); }
+    else maps.sat.invalidateSize();
+  }
+  if (id === "ndvi"){
+    if (!maps.ndvi){ maps.ndvi = baseMap("mapNdvi"); canvasOverlay(maps.ndvi, ndviColor); addOutline(maps.ndvi, false); }
+    else maps.ndvi.invalidateSize();
+  }
+  if (id === "altura"){
+    if (!maps.alt){ maps.alt = baseMap("mapAlt"); L.imageOverlay("img/altimetria.png", ALT_BOUNDS, {opacity:.8, interactive:false}).addTo(maps.alt); addOutline(maps.alt, false); }
+    else maps.alt.invalidateSize();
+  }
+}
+
+/* Tabla, leyenda y KPIs de altimetría */
+document.getElementById("altBody").innerHTML = ALT.map((r,i) =>
+  `<tr><td><span class="sw" style="background:${r[0]}"></span> ${i}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`).join("");
+document.getElementById("altLegend").innerHTML = ALT.map(r => `<span><i style="background:${r[0]}"></i>${r[4]}</span>`).join("");
+document.getElementById("altDesnivel").textContent = ALT_DESNIVEL;
+const altTop = ALT.reduce((a,b) => b[5] > a[5] ? b : a);
+document.getElementById("altMayor").textContent = `${altTop[4]} · ${Math.round(altTop[5])}%`;
+
+/* Fotos del establecimiento */
+document.getElementById("photoGrid").innerHTML = [
+  ["img/foto-pivote.jpg","Equipo de pivote central","23/03/2022"],
+  ["img/foto-sierra.jpg","Maíz con vista a la sierra","23/03/2022"]
+].map(f => `<figure class="photo" style="margin:0"><a href="${f[0]}" target="_blank" rel="noopener"><img class="photo-real" src="${f[0]}" alt="${f[1]}" loading="lazy" width="1400" height="630"></a><figcaption class="photo-cap"><b>${f[1]}</b>${f[2]} · Foto del establecimiento</figcaption></figure>`).join("");
+
+/* ---------- Ranking por importancia ---------- */
+const rankList = document.getElementById("rankList");
+const rankBlock = document.getElementById("rankBlock");
+function renderRank(focusId, focusDir){
+  rankList.innerHTML = state.rank.map((id, i) => `
+    <li class="rk" data-id="${id}">
+      <span class="rk-handle" aria-hidden="true" title="Arrastrar para ordenar">⋮⋮</span>
+      <span class="rk-n">${i + 1}</span>
+      <span class="rk-name">${NAME[id]}</span>
+      <button type="button" class="rk-btn" data-dir="-1" aria-label="Subir ${NAME[id]}" ${i === 0 ? "disabled" : ""}>▲</button>
+      <button type="button" class="rk-btn" data-dir="1" aria-label="Bajar ${NAME[id]}" ${i === state.rank.length - 1 ? "disabled" : ""}>▼</button>
+    </li>`).join("");
+  if (focusId){
+    const li = rankList.querySelector(`.rk[data-id="${focusId}"]`);
+    const b = li && (li.querySelector(`.rk-btn[data-dir="${focusDir}"]:not([disabled])`) || li.querySelector(".rk-btn:not([disabled])"));
+    if (b) b.focus();
+  }
+  updateRankStatus();
+}
+function markRankDone(){
+  state.rankDone = true;
+  rankBlock.classList.remove("is-pending");
+  saveDraft(); updateRankStatus();
+}
+function updateRankStatus(){
+  const btn = document.getElementById("btnRankOk");
+  btn.textContent = state.rankDone ? "✓ Orden confirmado" : "Confirmo este orden";
+  document.getElementById("rankStatus").textContent = state.rankDone ? "Podés seguir ajustando el orden si querés." : "";
+}
+rankList.addEventListener("click", e => {
+  const b = e.target.closest(".rk-btn"); if (!b || b.disabled) return;
+  const id = b.closest(".rk").dataset.id, dir = +b.dataset.dir;
+  const i = state.rank.indexOf(id), j = i + dir;
+  if (j < 0 || j >= state.rank.length) return;
+  [state.rank[i], state.rank[j]] = [state.rank[j], state.rank[i]];
+  markRankDone();
+  renderRank(id, dir);
+});
+document.getElementById("btnRankOk").addEventListener("click", markRankDone);
+// Mientras se arrastra, la página no hace scroll en el celular
+const blockTouchScroll = e => { if (e.cancelable) e.preventDefault(); };
+if (window.Sortable){
+  Sortable.create(rankList, {
+    handle: ".rk-handle", animation: 150, forceFallback: true, fallbackOnBody: true, draggable: ".rk",
+    onStart(){ document.addEventListener("touchmove", blockTouchScroll, {passive:false}); },
+    onEnd(evt){
+      document.removeEventListener("touchmove", blockTouchScroll);
+      if (evt.oldIndex !== evt.newIndex){
+        state.rank = [...rankList.querySelectorAll(".rk")].map(li => li.dataset.id);
+        markRankDone();
+      }
+      renderRank();
+    }
+  });
+}
+renderRank();
+
+/* ---------- Inicio ---------- */
+updateProgress();
+showTab(MAP_TABS.includes(state.tab) ? state.tab : "satelite");
+document.getElementById("btnStart").addEventListener("click", () => {
+  document.getElementById("ficha").scrollIntoView({behavior:"smooth"});
+});
+
+/* ---------- Validación ---------- */
+function flash(el){ el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }
+function validate(){
+  const missing = PARAMS.filter(x => !state.p[x.id].s);
+  document.querySelectorAll(".param").forEach(s => s.classList.toggle("is-pending", !state.p[s.dataset.id].s));
+  MAP_TABS.forEach(t => document.getElementById("tab-" + t).classList.toggle("pending-tab", !state.p[t].s));
+  rankBlock.classList.toggle("is-pending", !state.rankDone);
+  const openFields = ["falta_dato", "sacaria"].map(k => document.querySelector(`[data-req="${k}"]`));
+  openFields.forEach(f => f.classList.toggle("is-error", (state[f.dataset.req] || "").trim().length < 3));
+
+  if (missing.length){
+    const first = missing[0].id;
+    if (MAP_TABS.includes(first)) showTab(first);
+    const sec = document.querySelector(`.param[data-id="${first}"]`);
+    const target = MAP_TABS.includes(first) ? document.getElementById("mapCard") : sec;
+    target.scrollIntoView({behavior:"smooth", block:"start"});
+    flash(target);
+    setTimeout(() => sec.querySelector(".star").focus({preventScroll:true}), 400);
+    return `Faltan ${missing.length} ${missing.length > 1 ? "datos" : "dato"} por calificar.`;
+  }
+  if (!state.rankDone){
+    rankBlock.scrollIntoView({behavior:"smooth", block:"start"}); flash(rankBlock);
+    return "Falta ordenar los datos por importancia.";
+  }
+  const badField = openFields.find(f => f.classList.contains("is-error"));
+  if (badField){
+    badField.scrollIntoView({behavior:"smooth", block:"center"}); flash(badField);
+    setTimeout(() => badField.querySelector("textarea").focus({preventScroll:true}), 400);
+    return "Completá las preguntas obligatorias.";
+  }
+  return null;
+}
+
+/* ---------- Payload y envío ---------- */
+function buildPayload(){
+  const o = {timestamp: new Date().toISOString(), recordID: state.recordID || ""};
+  PARAMS.forEach(x => { o[x.id + "_estrellas"] = state.p[x.id].s; o[x.id + "_comentario"] = (state.p[x.id].c || "").trim(); });
+  o.ranking_orden = state.rank.join(" > ");
+  PARAMS.forEach(x => { o[x.id + "_ranking"] = state.rank.indexOf(x.id) + 1; });
+  o.falta_dato = state.falta_dato.trim();
+  o.sacaria = state.sacaria.trim();
+  o.user_agent = navigator.userAgent;
+  return o;
+}
+function showThanks(testMode){
+  document.getElementById("survey").hidden = true;
+  document.getElementById("thanks").hidden = false;
+  document.getElementById("testNotice").hidden = !testMode;
+  window.scrollTo(0,0);
+}
+document.getElementById("btnSend").addEventListener("click", async () => {
+  const msg = document.getElementById("submitMsg");
+  const err = validate();
+  if (err){ msg.textContent = err; return; }
+  msg.textContent = "";
+  const payload = buildPayload();
+  console.log("Payload de la encuesta:", JSON.stringify(payload, null, 2));
+  if (!ENDPOINT || ENDPOINT.startsWith("PEGAR")){
+    console.warn("ENDPOINT sin configurar: la respuesta NO se envió. Pegá la URL del Web App en la constante ENDPOINT.");
+    showThanks(true);
+    return;
+  }
+  const btn = document.getElementById("btnSend");
+  btn.disabled = true; btn.textContent = "Enviando…";
+  try {
+    await fetch(ENDPOINT, {method:"POST", mode:"no-cors", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:JSON.stringify(payload)});
+    try { localStorage.removeItem(DRAFT_KEY); } catch(e) {}
+    showThanks(false);
+  } catch(e) {
+    console.error(e);
+    msg.textContent = "No pudimos enviar. Revisá tu conexión y probá de nuevo. Tus respuestas siguen guardadas.";
+    btn.disabled = false; btn.textContent = "Enviar respuestas";
+  }
+});
+</script>
+</body>
+</html>

@@ -1,12 +1,17 @@
 /**
  * LotePerfecto · Encuesta "Ficha técnica de lote"
- * Recibe las respuestas del formulario web (POST JSON) y agrega una fila por encuestado
- * en la hoja "Respuestas". Crea también una hoja "Resumen" con promedios por parámetro.
+ * Recibe las respuestas del formulario web (POST JSON) y agrega una fila por encuestado.
+ *
+ * Atiende las dos versiones de la encuesta con la misma URL:
+ *   - v3 (carpeta /v3/): el payload trae "ranking_orden" → hoja "Respuestas_v3" + "Resumen_v3".
+ *   - v2 (página raíz):  cualquier otro payload        → hoja "Respuestas"    + "Resumen" (sin cambios).
  *
  * Pegar en: Planilla → Extensiones → Apps Script.
  * Implementar como Aplicación web · Ejecutar como: yo · Acceso: cualquier persona.
+ * Después de cambiar este código: Implementar → Administrar implementaciones → Editar → Versión: nueva.
  */
 
+/* ======================= v2 (no tocar: la usa la página raíz) ======================= */
 const SHEET_RESPUESTAS = 'Respuestas';
 const SHEET_RESUMEN = 'Resumen';
 
@@ -31,27 +36,44 @@ const HEADERS = [].concat(
   ['general_estrellas', 'falta_dato', 'sacaria', 'acepta_entrevista', 'user_agent']
 );
 
+/* ======================= v3 ======================= */
+const SHEET_V3 = 'Respuestas_v3';
+const RESUMEN_V3 = 'Resumen_v3';
+
+const PARAMS_V3 = [
+  ['satelite', 'Mapa – Satélite'],
+  ['ndvi', 'Mapa – NDVI'],
+  ['altura', 'Mapa – Altura (altimetría)'],
+  ['fotos', 'Mapa – Fotos'],
+  ['ubicacion', 'Ubicación'],
+  ['estado', 'Estado actual'],
+  ['suelo', 'Suelo y calidad'],
+  ['pretension', 'Pretensión'],
+  ['infraestructura', 'Infraestructura y servicios'],
+  ['comentarios', 'Comentarios del oferente'],
+  ['historial', 'Historial agronómico']
+];
+
+const HEADERS_V3 = [].concat(
+  ['timestamp', 'recordID'],
+  ...PARAMS_V3.map(p => [p[0] + '_estrellas', p[0] + '_comentario']),
+  ['ranking_orden'],
+  PARAMS_V3.map(p => p[0] + '_ranking'),
+  ['falta_dato', 'sacaria', 'user_agent']
+);
+
 function doPost(e) {
   const lock = LockService.getScriptLock();
   try {
     lock.waitLock(30000);
     const data = JSON.parse((e && e.postData && e.postData.contents) || '{}');
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const sheet = getRespuestasSheet_(ss);
 
-    // Se escribe según los encabezados reales de la hoja, así una hoja creada
-    // con una versión anterior de la encuesta no desordena las columnas.
-    const header = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-    const row = header.map(h => {
-      if (h === 'timestamp') return new Date();            // hora del servidor
-      const v = data[h];
-      if (v === undefined || v === null) return '';
-      if (h.endsWith('_estrellas')) return Number(v) || '';
-      return clean_(v);
-    });
-    sheet.appendRow(row);
-
-    ensureResumen_(ss);
+    if (Object.prototype.hasOwnProperty.call(data, 'ranking_orden')) {
+      writeV3_(ss, data);
+    } else {
+      writeV2_(ss, data);
+    }
     return json_({ ok: true });
   } catch (err) {
     return json_({ ok: false, error: String(err) });
@@ -65,32 +87,77 @@ function doGet() {
   return json_({ ok: true, info: 'Endpoint de la encuesta LotePerfecto activo. Usá POST.' });
 }
 
-function getRespuestasSheet_(ss) {
-  let sh = ss.getSheetByName(SHEET_RESPUESTAS);
-  if (!sh) {
-    sh = ss.insertSheet(SHEET_RESPUESTAS);
+/* ---------- v3 ---------- */
+function writeV3_(ss, data) {
+  const sheet = ensureSheet_(ss, SHEET_V3, HEADERS_V3);
+
+  // Si llega una clave que todavía no tiene columna, se agrega al final.
+  let header = headerOf_(sheet);
+  const extra = Object.keys(data).filter(k => header.indexOf(k) === -1);
+  if (extra.length) {
+    sheet.getRange(1, header.length + 1, 1, extra.length).setValues([extra])
+      .setFontWeight('bold').setBackground('#EEF6EA');
+    header = header.concat(extra);
   }
-  if (sh.getLastRow() === 0) {
-    sh.appendRow(HEADERS);
-    sh.getRange(1, 1, 1, HEADERS.length).setFontWeight('bold').setBackground('#EEF6EA');
-    sh.setFrozenRows(1);
-  } else {
-    // Agrega al final las columnas nuevas que falten (no borra las viejas).
-    const current = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
-    const missing = HEADERS.filter(h => current.indexOf(h) === -1);
-    if (missing.length) {
-      sh.getRange(1, current.length + 1, 1, missing.length).setValues([missing])
-        .setFontWeight('bold').setBackground('#EEF6EA');
-    }
-  }
-  return sh;
+
+  // Se escribe mapeando por nombre de encabezado, no por posición.
+  const row = header.map(h => {
+    if (h === 'timestamp') return new Date();             // hora del servidor
+    const v = data[h];
+    if (v === undefined || v === null) return '';
+    if (/_(estrellas|ranking)$/.test(h)) return Number(v) || '';
+    return clean_(v);
+  });
+  sheet.appendRow(row);
+  ensureResumenV3_(ss);
 }
 
-/** Crea la hoja Resumen una sola vez, con fórmulas que se actualizan solas. */
+/** Crea Resumen_v3 una sola vez, con fórmulas que se actualizan solas. */
+function ensureResumenV3_(ss) {
+  if (ss.getSheetByName(RESUMEN_V3)) return;
+  const header = headerOf_(ss.getSheetByName(SHEET_V3));
+  const sh = ss.insertSheet(RESUMEN_V3);
+  const rows = [['Parámetro', 'id', 'Promedio de estrellas', 'Cantidad de respuestas', '% con 4–5 estrellas', 'Posición promedio en el ranking (menor = más importante)']];
+  PARAMS_V3.forEach(p => {
+    const cs = colLetter_(header.indexOf(p[0] + '_estrellas') + 1);
+    const cr = colLetter_(header.indexOf(p[0] + '_ranking') + 1);
+    const s = `${SHEET_V3}!${cs}2:${cs}`, r = `${SHEET_V3}!${cr}2:${cr}`;
+    rows.push([
+      p[1],
+      p[0],
+      `=IFERROR(ROUND(AVERAGE(${s}),2),"")`,
+      `=COUNT(${s})`,
+      `=IFERROR(COUNTIF(${s},">=4")/COUNT(${s}),"")`,
+      `=IFERROR(ROUND(AVERAGE(${r}),2),"")`
+    ]);
+  });
+  sh.getRange(1, 1, rows.length, rows[0].length).setValues(rows);
+  sh.getRange(1, 1, 1, rows[0].length).setFontWeight('bold').setBackground('#FFF8DC');
+  sh.getRange(2, 5, rows.length - 1, 1).setNumberFormat('0%');
+  sh.setFrozenRows(1);
+  sh.autoResizeColumns(1, rows[0].length);
+}
+
+/* ---------- v2 (mismo comportamiento que antes) ---------- */
+function writeV2_(ss, data) {
+  const sheet = ensureSheet_(ss, SHEET_RESPUESTAS, HEADERS);
+  const header = headerOf_(sheet);
+  const row = header.map(h => {
+    if (h === 'timestamp') return new Date();
+    const v = data[h];
+    if (v === undefined || v === null) return '';
+    if (h.endsWith('_estrellas')) return Number(v) || '';
+    return clean_(v);
+  });
+  sheet.appendRow(row);
+  ensureResumen_(ss);
+}
+
+/** Crea la hoja Resumen (v2) una sola vez. */
 function ensureResumen_(ss) {
   if (ss.getSheetByName(SHEET_RESUMEN)) return;
+  const header = headerOf_(ss.getSheetByName(SHEET_RESPUESTAS));
   const sh = ss.insertSheet(SHEET_RESUMEN);
-  const header = ss.getSheetByName(SHEET_RESPUESTAS).getRange(1, 1, 1, ss.getSheetByName(SHEET_RESPUESTAS).getLastColumn()).getValues()[0];
   const rows = [['Parámetro', 'id', 'Promedio de estrellas', 'Cantidad de respuestas', '% con 4–5 estrellas']];
   const items = PARAMS.concat([['general', 'Valoración general']]);
   items.forEach(p => {
@@ -109,6 +176,31 @@ function ensureResumen_(ss) {
   sh.getRange(2, 5, rows.length - 1, 1).setNumberFormat('0%');
   sh.setFrozenRows(1);
   sh.autoResizeColumns(1, rows[0].length);
+}
+
+/* ---------- Utilidades compartidas ---------- */
+
+/** Crea la hoja con encabezados si no existe y agrega al final las columnas que falten. */
+function ensureSheet_(ss, name, headers) {
+  let sh = ss.getSheetByName(name);
+  if (!sh) sh = ss.insertSheet(name);
+  if (sh.getLastRow() === 0) {
+    sh.appendRow(headers);
+    sh.getRange(1, 1, 1, headers.length).setFontWeight('bold').setBackground('#EEF6EA');
+    sh.setFrozenRows(1);
+  } else {
+    const current = headerOf_(sh);
+    const missing = headers.filter(h => current.indexOf(h) === -1);
+    if (missing.length) {
+      sh.getRange(1, current.length + 1, 1, missing.length).setValues([missing])
+        .setFontWeight('bold').setBackground('#EEF6EA');
+    }
+  }
+  return sh;
+}
+
+function headerOf_(sh) {
+  return sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
 }
 
 function colLetter_(n) {
@@ -130,6 +222,8 @@ function json_(obj) {
 /** Opcional: ejecutalo una vez desde el editor para crear las hojas antes de la primera respuesta. */
 function setup() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  getRespuestasSheet_(ss);
+  ensureSheet_(ss, SHEET_RESPUESTAS, HEADERS);
   ensureResumen_(ss);
+  ensureSheet_(ss, SHEET_V3, HEADERS_V3);
+  ensureResumenV3_(ss);
 }
