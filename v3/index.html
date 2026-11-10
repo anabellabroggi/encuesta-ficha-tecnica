@@ -66,16 +66,6 @@ main{padding-top:72px;padding-bottom:40px}
 .intro-text{display:grid;gap:10px;font-size:16px;max-width:780px}
 .alert-box{display:flex;gap:10px;align-items:flex-start;background:var(--gold-50);border:1px solid #EAD48A;border-radius:10px;padding:12px 14px;font-weight:600;max-width:780px}
 .alert-box span{font-size:20px;line-height:1.2}
-.steps-title{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
-.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-.step{position:relative;border:1px solid var(--border);border-radius:10px;padding:12px 12px 12px 54px;background:#fff;min-height:66px}
-.step .n{position:absolute;left:12px;top:12px;width:30px;height:30px;border-radius:50%;background:#EDEFEA;color:var(--muted);display:grid;place-items:center;font-weight:700}
-.step b{display:block}
-.step small{display:block;color:var(--muted);font-size:14px}
-.step.on{border:2px solid var(--green);background:var(--green-50)}
-.step.on .n{background:var(--green);color:#fff}
-.step.on small strong{color:var(--green-dk)}
-.step:not(:last-child)::after{content:"→";position:absolute;right:-15px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-weight:700}
 .how{display:grid;gap:8px;margin:0;padding:12px 14px;background:#F1F3EF;border-radius:10px;font-size:15px;max-width:780px}
 .how li{margin-left:18px}
 
@@ -161,10 +151,8 @@ table{width:100%;border-collapse:collapse;font-size:14px}
 th{text-align:left;font-weight:600;color:var(--muted);font-size:13px;padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
 td{padding:9px 10px;border-bottom:1px solid #F0F1F3;white-space:nowrap}
 .chip{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600}
-.chip-ok{background:var(--green-50);color:var(--green-dk)}
-.chip-warn{background:#FFF6D1;color:#7A5C00}
-.chip-alt{background:#FDEBD8;color:#9A4A06}
-.chip-bad{background:var(--red-50);color:#A12C2C}
+.hist td,.hist th{white-space:normal}
+.hist th:first-child,.hist td:first-child{width:40%}
 .chip-yes{background:var(--green);color:#fff;margin-right:6px}
 .chip-no{background:#E5E7EB;color:#4B5563;margin-right:6px}
 .sw{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:-1px}
@@ -212,8 +200,17 @@ td{padding:9px 10px;border-bottom:1px solid #F0F1F3;white-space:nowrap}
 .rk.sortable-ghost{opacity:.35}
 .rk.sortable-chosen{box-shadow:0 6px 18px rgba(0,0,0,.14)}
 .sortable-fallback{opacity:.95!important}
-.rank-foot{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.rank-status{font-size:14px;color:var(--green-dk);font-weight:600}
+.rank-cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+.rank-col{display:grid;gap:8px;min-width:0}
+.rank-col-h{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#525252}
+.rank-count{color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0}
+.rank-col-dest .rank{background:#fff;border:2px dashed #D9C77A;border-radius:12px;padding:6px;min-height:140px}
+.rank-col-dest .rank:empty::before{content:attr(data-empty);display:grid;place-items:center;min-height:124px;color:#9A8A4A;font-weight:600;font-size:14px;text-align:center;padding:0 12px}
+.rank-pool:empty{min-height:56px;border:2px dashed #E5E7EB;border-radius:12px}
+.rank-done{margin:0;font-size:14px;color:var(--green-dk);font-weight:600}
+.rk-add{min-height:40px;padding:0 12px;border:1px solid var(--green);border-radius:8px;background:#fff;color:var(--green-dk);font-weight:600;cursor:pointer;flex:none;font-size:14px}
+.rk-add:focus-visible{outline:2px solid var(--green);outline-offset:1px}
+.rank-pool .rk{padding-right:6px}
 .rank-err{display:none;color:var(--red);font-size:14px;font-weight:600}
 .rank-block.is-pending{background:var(--red-50);border-color:var(--red);box-shadow:0 0 0 3px rgba(214,69,69,.25)}
 .rank-block.is-pending .rank-err{display:block}
@@ -245,8 +242,8 @@ td{padding:9px 10px;border-bottom:1px solid #F0F1F3;white-space:nowrap}
   .map{height:280px}
 }
 @media (max-width:700px){
-  .steps{grid-template-columns:1fr;gap:16px}
-  .step:not(:last-child)::after{content:"↓";right:auto;left:22px;top:auto;bottom:-17px;transform:none}
+  .rank-cols{grid-template-columns:1fr}
+  .rank-col-dest{order:-1}   /* en celular, el destino arriba: cada dato se arrastra un tramo corto */
 }
 @media (max-width:560px){
   .hero h1{font-size:28px}
@@ -287,14 +284,6 @@ td{padding:9px 10px;border-bottom:1px solid #F0F1F3;white-space:nowrap}
         <p>Queremos entender <b>qué tan relevantes son los parámetros que mostramos hoy</b> para un productor o empresa que busca alquilar. Te pedimos que respondas con total sinceridad: eso es lo que más nos ayuda a mejorar.</p>
       </div>
       <div class="alert-box" role="note"><span aria-hidden="true">⚠️</span><p>No tenés que evaluar el lote en sí, sino los parámetros que se muestran en la ficha. El lote es solo un ejemplo.</p></div>
-      <div>
-        <div class="steps-title">Dónde está la ficha dentro del proceso</div>
-        <ol class="steps">
-          <li class="step on"><span class="n">1</span><b>Ficha técnica</b><small>Vista preliminar del lote. <strong>Es la etapa que vas a evaluar.</strong></small></li>
-          <li class="step"><span class="n">2</span><b>Chat directo con el dueño</b><small>Se habilita después de ver la ficha.</small></li>
-          <li class="step"><span class="n">3</span><b>Visita al lote</b><small>Se coordina con el dueño.</small></li>
-        </ol>
-      </div>
       <ul class="how">
         <li>Debajo de cada dato, marcá con <b>estrellas</b> qué tan útil te resulta y, si querés, contanos qué le mejorarías.</li>
         <li>Al final vas a <b>ordenar los datos por importancia</b>.</li>
@@ -368,15 +357,15 @@ td{padding:9px 10px;border-bottom:1px solid #F0F1F3;white-space:nowrap}
         <div class="card-body" style="padding-bottom:8px">
           <h3 class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>Historial agronómico</h3>
         </div>
-        <div class="tbl-wrap" style="padding:0 6px 10px">
-          <table>
-            <thead><tr><th>Campaña</th><th>Cultivo</th><th>Aplicaciones</th><th>Sup. sembrada</th><th>Anegamiento</th></tr></thead>
+        <div style="padding:0 6px 10px">
+          <table class="hist">
+            <thead><tr><th>Campaña</th><th>Cultivo</th></tr></thead>
             <tbody>
-              <tr><td>2025/26</td><td>Maíz semilla</td><td>5 (herb., fung., insect.)</td><td>70 ha</td><td><span class="chip chip-warn">Moderado · 17%</span></td></tr>
-              <tr><td>2024/25</td><td>Girasol</td><td>3 (herb., insect.)</td><td>70 ha</td><td><span class="chip chip-ok">Sin anegamiento</span></td></tr>
-              <tr><td>2023/24</td><td>Soja</td><td>4 (herb., fung.)</td><td>70 ha</td><td><span class="chip chip-ok">Bajo · 11%</span></td></tr>
-              <tr><td>2022/23</td><td>Trigo</td><td>3 (herb., fung.)</td><td>70 ha</td><td><span class="chip chip-bad">Severo · 59%</span></td></tr>
-              <tr><td>2021/22</td><td>Soja</td><td>4 (herb., fung.)</td><td>70 ha</td><td><span class="chip chip-alt">Alto · 47%</span></td></tr>
+              <tr><td>2025/26</td><td>Maíz semilla</td></tr>
+              <tr><td>2024/25</td><td>Girasol</td></tr>
+              <tr><td>2023/24</td><td>Soja</td></tr>
+              <tr><td>2022/23</td><td>Trigo</td></tr>
+              <tr><td>2021/22</td><td>Soja</td></tr>
             </tbody>
           </table>
         </div>
@@ -464,13 +453,19 @@ td{padding:9px 10px;border-bottom:1px solid #F0F1F3;white-space:nowrap}
     <div class="card-body">
       <div class="rank-block" id="rankBlock">
         <span class="rate-title">Ordená los datos de más a menos importante <span class="req">*</span></span>
-        <p class="rank-sub">Arrastrá para ordenar. Arriba, el más importante para decidir alquilar.</p>
-        <ol class="rank" id="rankList" aria-label="Ranking de datos por importancia"></ol>
-        <div class="rank-foot">
-          <button type="button" class="btn btn-outline" id="btnRankOk">Confirmo este orden</button>
-          <span class="rank-status" id="rankStatus" aria-live="polite"></span>
+        <p class="rank-sub">Pasá cada dato a <b>Tu orden de importancia</b>, empezando por el más importante para decidir alquilar. Podés arrastrarlo o tocar <b>Agregar</b>. Una vez ahí, lo podés reacomodar arrastrando o con ▲ ▼.</p>
+        <div class="rank-cols">
+          <div class="rank-col">
+            <div class="rank-col-h">Datos sin ordenar <span class="rank-count" id="poolCount"></span></div>
+            <ul class="rank rank-pool" id="poolList" aria-label="Datos sin ordenar"></ul>
+            <p class="rank-done" id="poolDone" hidden>✓ Ya ordenaste todos los datos.</p>
+          </div>
+          <div class="rank-col rank-col-dest">
+            <div class="rank-col-h">Tu orden de importancia <span class="rank-count" id="rankCount"></span></div>
+            <ol class="rank rank-dest" id="rankList" aria-label="Tu orden de importancia" data-empty="Arrastrá acá el dato más importante"></ol>
+          </div>
         </div>
-        <span class="rank-err">Ordená la lista o tocá "Confirmo este orden".</span>
+        <span class="rank-err" id="rankErr"></span>
       </div>
       <div class="field" data-req="falta_dato">
         <label for="f_falta">¿Qué dato te falta para decidir si alquilar un lote? <span class="req">*</span></label>
@@ -563,7 +558,7 @@ function shuffle(arr){
 }
 function emptyState(){
   const p = {}; PARAMS.forEach(x => p[x.id] = {s:0, c:""});
-  return {recordID:"", p, rank:shuffle(PARAM_IDS), rankDone:false, falta_dato:"", sacaria:"", tab:"satelite"};
+  return {recordID:"", p, pool:shuffle(PARAM_IDS), rank:[], falta_dato:"", sacaria:"", tab:"satelite"};
 }
 let state = emptyState();
 try {
@@ -578,8 +573,10 @@ try {
   }
 } catch(e) {}
 if (URL_RID) state.recordID = URL_RID;
-if (!Array.isArray(state.rank) || state.rank.length !== PARAM_IDS.length || !PARAM_IDS.every(id => state.rank.includes(id))) {
-  state.rank = shuffle(PARAM_IDS); state.rankDone = false;
+// Las dos listas juntas tienen que tener cada dato una sola vez; si no (borrador viejo), se reinicia el ranking.
+{
+  const all = (Array.isArray(state.pool) ? state.pool : []).concat(Array.isArray(state.rank) ? state.rank : []);
+  if (all.length !== PARAM_IDS.length || !PARAM_IDS.every(id => all.includes(id))) { state.pool = shuffle(PARAM_IDS); state.rank = []; }
 }
 document.getElementById("recordID").value = state.recordID || "";
 function saveDraft(){ try { localStorage.setItem(DRAFT_KEY, JSON.stringify(state)); } catch(e) {} }
@@ -823,60 +820,77 @@ document.getElementById("photoGrid").innerHTML = [
   ["img/foto-sierra.jpg","Maíz con vista a la sierra","23/03/2022"]
 ].map(f => `<figure class="photo" style="margin:0"><a href="${f[0]}" target="_blank" rel="noopener"><img class="photo-real" src="${f[0]}" alt="${f[1]}" loading="lazy" width="1400" height="630"></a><figcaption class="photo-cap"><b>${f[1]}</b>${f[2]} · Foto del establecimiento</figcaption></figure>`).join("");
 
-/* ---------- Ranking por importancia ---------- */
+/* ---------- Ranking por importancia: dos listas ---------- */
 const rankList = document.getElementById("rankList");
+const poolList = document.getElementById("poolList");
 const rankBlock = document.getElementById("rankBlock");
-function renderRank(focusId, focusDir){
+const rankComplete = () => state.pool.length === 0 && state.rank.length === PARAM_IDS.length;
+function renderRank(focusId, focusSel){
+  poolList.innerHTML = state.pool.map(id => `
+    <li class="rk" data-id="${id}">
+      <span class="rk-handle" aria-hidden="true" title="Arrastrar">⋮⋮</span>
+      <span class="rk-name">${NAME[id]}</span>
+      <button type="button" class="rk-add" data-act="add" aria-label="Agregar ${NAME[id]} a tu orden de importancia">Agregar</button>
+    </li>`).join("");
   rankList.innerHTML = state.rank.map((id, i) => `
     <li class="rk" data-id="${id}">
       <span class="rk-handle" aria-hidden="true" title="Arrastrar para ordenar">⋮⋮</span>
       <span class="rk-n">${i + 1}</span>
       <span class="rk-name">${NAME[id]}</span>
-      <button type="button" class="rk-btn" data-dir="-1" aria-label="Subir ${NAME[id]}" ${i === 0 ? "disabled" : ""}>▲</button>
-      <button type="button" class="rk-btn" data-dir="1" aria-label="Bajar ${NAME[id]}" ${i === state.rank.length - 1 ? "disabled" : ""}>▼</button>
+      <button type="button" class="rk-btn" data-act="up" aria-label="Subir ${NAME[id]}" ${i === 0 ? "disabled" : ""}>▲</button>
+      <button type="button" class="rk-btn" data-act="down" aria-label="Bajar ${NAME[id]}" ${i === state.rank.length - 1 ? "disabled" : ""}>▼</button>
     </li>`).join("");
+  document.getElementById("poolCount").textContent = `(${state.pool.length})`;
+  document.getElementById("rankCount").textContent = `(${state.rank.length} de ${PARAM_IDS.length})`;
+  document.getElementById("poolDone").hidden = state.pool.length > 0;
+  if (rankComplete()) rankBlock.classList.remove("is-pending");
+  const left = state.pool.length;
+  document.getElementById("rankErr").textContent = `Te ${left === 1 ? "falta" : "faltan"} pasar ${left} ${left === 1 ? "dato" : "datos"} a tu orden de importancia.`;
   if (focusId){
-    const li = rankList.querySelector(`.rk[data-id="${focusId}"]`);
-    const b = li && (li.querySelector(`.rk-btn[data-dir="${focusDir}"]:not([disabled])`) || li.querySelector(".rk-btn:not([disabled])"));
+    const b = document.querySelector(`.rk[data-id="${focusId}"] ${focusSel}:not([disabled])`)
+           || document.querySelector(`.rk[data-id="${focusId}"] .rk-btn:not([disabled])`)
+           || poolList.querySelector(".rk-add");
     if (b) b.focus();
   }
-  updateRankStatus();
 }
-function markRankDone(){
-  state.rankDone = true;
-  rankBlock.classList.remove("is-pending");
-  saveDraft(); updateRankStatus();
+function rankChanged(){
+  const wasDone = state._doneShown;
+  saveDraft();
+  if (rankComplete() && !wasDone){ state._doneShown = true; toast(`¡Listo! Ordenaste los ${PARAM_IDS.length} datos`); }
+  if (!rankComplete()) state._doneShown = false;
 }
-function updateRankStatus(){
-  const btn = document.getElementById("btnRankOk");
-  btn.textContent = state.rankDone ? "✓ Orden confirmado" : "Confirmo este orden";
-  document.getElementById("rankStatus").textContent = state.rankDone ? "Podés seguir ajustando el orden si querés." : "";
-}
-rankList.addEventListener("click", e => {
-  const b = e.target.closest(".rk-btn"); if (!b || b.disabled) return;
-  const id = b.closest(".rk").dataset.id, dir = +b.dataset.dir;
-  const i = state.rank.indexOf(id), j = i + dir;
+document.getElementById("rankBlock").addEventListener("click", e => {
+  const b = e.target.closest("button[data-act]"); if (!b || b.disabled) return;
+  const id = b.closest(".rk").dataset.id, act = b.dataset.act;
+  if (act === "add"){
+    state.pool = state.pool.filter(x => x !== id); state.rank.push(id);
+    rankChanged(); renderRank(state.pool[0] ? null : id, ".rk-btn");
+    const next = poolList.querySelector(".rk-add"); if (next) next.focus();
+    return;
+  }
+  const i = state.rank.indexOf(id), j = i + (act === "up" ? -1 : 1);
   if (j < 0 || j >= state.rank.length) return;
   [state.rank[i], state.rank[j]] = [state.rank[j], state.rank[i]];
-  markRankDone();
-  renderRank(id, dir);
+  rankChanged(); renderRank(id, `.rk-btn[data-act="${act}"]`);
 });
-document.getElementById("btnRankOk").addEventListener("click", markRankDone);
 // Mientras se arrastra, la página no hace scroll en el celular
 const blockTouchScroll = e => { if (e.cancelable) e.preventDefault(); };
 if (window.Sortable){
-  Sortable.create(rankList, {
-    handle: ".rk-handle", animation: 150, forceFallback: true, fallbackOnBody: true, draggable: ".rk",
+  const opts = {
+    group: "ranking", handle: ".rk-handle", animation: 150, forceFallback: true, fallbackOnBody: true, draggable: ".rk",
     onStart(){ document.addEventListener("touchmove", blockTouchScroll, {passive:false}); },
-    onEnd(evt){
+    onEnd(){
       document.removeEventListener("touchmove", blockTouchScroll);
-      if (evt.oldIndex !== evt.newIndex){
-        state.rank = [...rankList.querySelectorAll(".rk")].map(li => li.dataset.id);
-        markRankDone();
+      const pool = [...poolList.querySelectorAll(".rk")].map(li => li.dataset.id);
+      const rank = [...rankList.querySelectorAll(".rk")].map(li => li.dataset.id);
+      if (pool.join() !== state.pool.join() || rank.join() !== state.rank.join()){
+        state.pool = pool; state.rank = rank; rankChanged();
       }
       renderRank();
     }
-  });
+  };
+  Sortable.create(poolList, Object.assign({}, opts, {sort:false}));
+  Sortable.create(rankList, opts);
 }
 renderRank();
 
@@ -893,7 +907,7 @@ function validate(){
   const missing = PARAMS.filter(x => !state.p[x.id].s);
   document.querySelectorAll(".param").forEach(s => s.classList.toggle("is-pending", !state.p[s.dataset.id].s));
   MAP_TABS.forEach(t => document.getElementById("tab-" + t).classList.toggle("pending-tab", !state.p[t].s));
-  rankBlock.classList.toggle("is-pending", !state.rankDone);
+  rankBlock.classList.toggle("is-pending", !rankComplete());
   const openFields = ["falta_dato", "sacaria"].map(k => document.querySelector(`[data-req="${k}"]`));
   openFields.forEach(f => f.classList.toggle("is-error", (state[f.dataset.req] || "").trim().length < 3));
 
@@ -907,7 +921,7 @@ function validate(){
     setTimeout(() => sec.querySelector(".star").focus({preventScroll:true}), 400);
     return `Faltan ${missing.length} ${missing.length > 1 ? "datos" : "dato"} por calificar.`;
   }
-  if (!state.rankDone){
+  if (!rankComplete()){
     rankBlock.scrollIntoView({behavior:"smooth", block:"start"}); flash(rankBlock);
     return "Falta ordenar los datos por importancia.";
   }

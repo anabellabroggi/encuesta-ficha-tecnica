@@ -21,12 +21,13 @@ Hay dos versiones publicadas en paralelo:
 
 ## Qué cambió en la v3
 
-- Portada nueva: explica que es la ficha de un lote **para alquiler**, que se evalúan los parámetros y no el lote, y muestra el proceso en 3 pasos: ficha técnica, chat con el dueño y visita.
+- Portada nueva: explica que es la ficha de un lote **para alquiler** y que se evalúan los parámetros, no el lote.
 - No pide datos de contacto. La persona se identifica con el `recordID` de HubSpot que viene en el link.
 - El mapa avisa que tiene 4 vistas para calificar por separado y guía de una a la otra.
-- Al final se ordenan todos los datos por importancia, arrastrando o con las flechas ▲ ▼.
+- Al final se ordenan los datos por importancia con dos listas: se pasan de "Datos sin ordenar" a "Tu orden de importancia", arrastrando o con el botón *Agregar*, y se reacomodan arrastrando o con ▲ ▼. En celular la lista de destino va arriba para que el arrastre sea corto.
 - Las dos preguntas abiertas son obligatorias. Se sacaron la valoración general y la pregunta de la entrevista.
 - Módulos nuevos: Infraestructura y servicios, Comentarios del oferente.
+- Historial agronómico con solo Campaña y Cultivo, para que entre sin scroll en el celular.
 - Módulos que se sacaron porque no están en la ficha actual: Descripción y aptitud, Anegamiento histórico satelital, Preguntas frecuentes. Suelo y calidad queda con el formato de la plataforma.
 
 ## Link personalizado desde HubSpot
